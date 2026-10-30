@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 
 /**
  * 4 Spider-Men Profile Data aligned with the OptionWheel:
@@ -135,96 +135,133 @@ export const SPIDER_MEN = [
 
 /**
  * 2D Glassmorphism Profile Info Card:
- * Optimized to fit within 100vh height without vertical overflow.
+ * Features:
+ * - 0.5s smooth crossfade transition when activeIndex changes
+ * - Stable, jitter-free outer card frame
+ * - Dynamic theme color glow transition
  */
 function SpiderCard({ activeIndex = 1, onSelectSpider, className = '' }) {
-  const current = SPIDER_MEN[activeIndex] || SPIDER_MEN[1];
+  const [displayIndex, setDisplayIndex] = useState(activeIndex);
+  const [isCrossfading, setIsCrossfading] = useState(false);
+
+  // Smooth 0.5s crossfade transition (fade out 240ms, swap data, fade in 260ms)
+  useEffect(() => {
+    let timerB;
+    if (activeIndex !== displayIndex) {
+      const timerA = setTimeout(() => {
+        setIsCrossfading(true);
+      }, 0);
+      timerB = setTimeout(() => {
+        setDisplayIndex(activeIndex);
+        setIsCrossfading(false);
+      }, 240);
+
+      return () => {
+        clearTimeout(timerA);
+        clearTimeout(timerB);
+      };
+    }
+  }, [activeIndex, displayIndex]);
+
+  const current = SPIDER_MEN[displayIndex] || SPIDER_MEN[1];
 
   return (
     <article
       aria-label={`Spider-Man Profile: ${current.name}`}
-      className={`w-full max-w-md lg:max-w-[420px] select-none transition-all duration-300 ease-out pointer-events-auto ${className}`}
+      className={`w-full max-w-md lg:max-w-[420px] select-none pointer-events-auto ${className}`}
     >
-      <div className="bg-white/[0.08] backdrop-blur-xl border border-white/20 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl shadow-black/80 relative overflow-hidden transition-colors duration-500">
+      <div className="bg-white/[0.08] backdrop-blur-xl border border-white/20 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl shadow-black/80 relative overflow-hidden transition-colors duration-500 min-h-[460px] flex flex-col justify-between">
         
         {/* Specular top edge highlight */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
 
-        {/* Ambient background glow */}
+        {/* Ambient background glow smoothly transitioning with current suit theme */}
         <div
           className="absolute -top-16 -right-16 w-44 h-44 rounded-full opacity-20 blur-3xl pointer-events-none transition-all duration-700"
           style={{ backgroundColor: current.themeColor }}
         />
 
-        {/* Header Row: Dimension Badge & Timeline Index */}
-        <div className="flex items-center justify-between gap-2 mb-3 relative z-10">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-wider uppercase bg-white/10 border border-white/20 text-neutral-200">
-            <span
-              className="w-1.5 h-1.5 rounded-full animate-ping"
-              style={{ backgroundColor: current.themeColor }}
-            />
-            {current.dimension}
-          </span>
-          <span className="text-[11px] font-mono font-medium tracking-widest text-neutral-400">
-            0{activeIndex + 1} // 04
-          </span>
-        </div>
-
-        {/* Spider-Man Name & Era */}
-        <div className="mb-3 relative z-10">
-          <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2">
-            {current.name}
-          </h2>
-          <div className="text-[11px] font-medium uppercase tracking-wider text-neutral-300 mt-0.5">
-            {current.alias} &bull; <span style={{ color: current.themeColor }} className="font-semibold">{current.suitName}</span>
-          </div>
-        </div>
-
-        {/* Emblem & Holographic Backdrop */}
-        <div className="relative w-full h-28 sm:h-32 rounded-xl overflow-hidden mb-3 border border-white/15 bg-gradient-to-br from-neutral-900/90 via-black/90 to-neutral-950/90 flex items-center justify-center group">
-          <div
-            className="absolute inset-0 opacity-25 blur-xl transition-all duration-700"
-            style={{ backgroundColor: current.themeColor }}
-          />
-
-          <div
-            className="absolute inset-0 opacity-15 pointer-events-none"
-            style={{
-              backgroundImage: `
-                linear-gradient(to right, rgba(255,255,255,0.2) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255,255,255,0.2) 1px, transparent 1px)
-              `,
-              backgroundSize: '20px 20px'
-            }}
-          />
-
-          <div className="relative z-10 flex flex-col items-center justify-center transition-transform duration-300 group-hover:scale-105">
-            {current.svgEmblem}
-            <span className="text-[9px] font-mono tracking-widest uppercase text-neutral-400 mt-1">
-              {current.badge}
+        {/* 
+          Smooth Crossfading Content Block:
+          Fades out and glides slightly, then crossfades in smoothly over 0.5s
+        */}
+        <div
+          className={`flex-1 flex flex-col justify-between transition-all duration-300 ease-out ${
+            isCrossfading
+              ? 'opacity-0 translate-y-2 scale-[0.98] blur-[2px]'
+              : 'opacity-100 translate-y-0 scale-100 blur-0'
+          }`}
+        >
+          {/* Header Row: Dimension Badge & Timeline Index */}
+          <div className="flex items-center justify-between gap-2 mb-3 relative z-10">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-wider uppercase bg-white/10 border border-white/20 text-neutral-200">
+              <span
+                className="w-1.5 h-1.5 rounded-full animate-ping"
+                style={{ backgroundColor: current.themeColor }}
+              />
+              {current.dimension}
+            </span>
+            <span className="text-[11px] font-mono font-medium tracking-widest text-neutral-400">
+              0{displayIndex + 1} // 04
             </span>
           </div>
 
-          <div className="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse top-2" />
-        </div>
-
-        {/* Bio */}
-        <p className="text-xs text-neutral-300 leading-relaxed font-light mb-3 relative z-10 line-clamp-3">
-          {current.bio}
-        </p>
-
-        {/* Suit Specs & Power Stats */}
-        <div className="space-y-1.5 mb-3 pt-2.5 border-t border-white/10 relative z-10">
-          {current.stats.map((stat, i) => (
-            <div key={i} className="flex items-center justify-between text-[11px]">
-              <span className="text-neutral-400 font-medium">{stat.label}</span>
-              <span className="font-mono font-bold text-white tracking-wide">{stat.value}</span>
+          {/* Spider-Man Name & Era */}
+          <div className="mb-3 relative z-10">
+            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2">
+              {current.name}
+            </h2>
+            <div className="text-[11px] font-medium uppercase tracking-wider text-neutral-300 mt-0.5">
+              {current.alias} &bull; <span style={{ color: current.themeColor }} className="font-semibold">{current.suitName}</span>
             </div>
-          ))}
+          </div>
+
+          {/* Emblem & Holographic Backdrop */}
+          <div className="relative w-full h-28 sm:h-32 rounded-xl overflow-hidden mb-3 border border-white/15 bg-gradient-to-br from-neutral-900/90 via-black/90 to-neutral-950/90 flex items-center justify-center group">
+            <div
+              className="absolute inset-0 opacity-25 blur-xl transition-all duration-700"
+              style={{ backgroundColor: current.themeColor }}
+            />
+
+            <div
+              className="absolute inset-0 opacity-15 pointer-events-none"
+              style={{
+                backgroundImage: `
+                  linear-gradient(to right, rgba(255,255,255,0.2) 1px, transparent 1px),
+                  linear-gradient(to bottom, rgba(255,255,255,0.2) 1px, transparent 1px)
+                `,
+                backgroundSize: '20px 20px'
+              }}
+            />
+
+            <div className="relative z-10 flex flex-col items-center justify-center transition-transform duration-300 group-hover:scale-105">
+              {current.svgEmblem}
+              <span className="text-[9px] font-mono tracking-widest uppercase text-neutral-400 mt-1">
+                {current.badge}
+              </span>
+            </div>
+
+            <div className="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse top-2" />
+          </div>
+
+          {/* Bio */}
+          <p className="text-xs text-neutral-300 leading-relaxed font-light mb-3 relative z-10 line-clamp-3">
+            {current.bio}
+          </p>
+
+          {/* Suit Specs & Power Stats */}
+          <div className="space-y-1.5 mb-3 pt-2.5 border-t border-white/10 relative z-10">
+            {current.stats.map((stat, i) => (
+              <div key={i} className="flex items-center justify-between text-[11px]">
+                <span className="text-neutral-400 font-medium">{stat.label}</span>
+                <span className="font-mono font-bold text-white tracking-wide">{stat.value}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Interactive Dimension Switcher Dots */}
-        <div className="flex items-center justify-between pt-2.5 border-t border-white/10 relative z-10">
+        {/* Interactive Dimension Switcher Dots (Immediate tactile feedback) */}
+        <div className="flex items-center justify-between pt-2.5 border-t border-white/10 relative z-10 flex-shrink-0">
           <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-mono">
             Dimension:
           </span>
