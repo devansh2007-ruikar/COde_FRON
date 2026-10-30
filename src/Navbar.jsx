@@ -17,6 +17,17 @@ const SpiderIcon = () => (
 );
 
 export default function Navbar({ activeIndex = 0, onNavChange }) {
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(typeof window !== 'undefined' ? window.innerWidth < 640 : false);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const navItems = [
     {
       label: 'Home',
@@ -45,8 +56,8 @@ export default function Navbar({ activeIndex = 0, onNavChange }) {
   ];
 
   return (
-    <header className="fixed top-0 left-0 w-full flex justify-center pt-6 z-50 pointer-events-none">
-      <div className="pointer-events-auto">
+    <header className="fixed top-0 left-0 w-full flex justify-center pt-3 sm:pt-6 px-3 z-50 pointer-events-none">
+      <div className="pointer-events-auto max-w-[calc(100vw-24px)] flex justify-center">
         <GooeyNav
           items={navItems}
           activeIndex={activeIndex}
@@ -54,10 +65,10 @@ export default function Navbar({ activeIndex = 0, onNavChange }) {
           initialActiveIndex={0}
           theme="dark"
           color="#e23636"
-          size="md"
+          size={isMobile ? 'sm' : 'md'}
           frame={true}
-          particleCount={15}
-          spread={56}
+          particleCount={isMobile ? 8 : 15}
+          spread={isMobile ? 36 : 56}
           animationTime={600}
           timeVariance={300}
           gooeyness={0.6}

@@ -1,4 +1,4 @@
-import React, { memo, useRef, useEffect, useCallback } from 'react';
+import React, { useState, memo, useRef, useEffect, useCallback } from 'react';
 import FlexCarousel from './FlexCarousel';
 import { SPIDER_GALLERY_ITEMS } from '../data/galleryData';
 import { smoothScrollToSection, isScrollAnimating } from '../utils/smoothScroll';
@@ -14,8 +14,23 @@ import { smoothScrollToSection, isScrollAnimating } from '../utils/smoothScroll'
 function GallerySection({ items = SPIDER_GALLERY_ITEMS }) {
   const sectionRef = useRef(null);
   const carouselRef = useRef(null);
+  const [screenType, setScreenType] = useState('desktop');
 
-  // Trigger bloom intro when this 100vh page comes into view
+  useEffect(() => {
+    const handleResize = () => {
+      const w = window.innerWidth;
+      if (w < 640) setScreenType('mobile');
+      else if (w < 1024) setScreenType('tablet');
+      else setScreenType('desktop');
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const cardHeight = screenType === 'mobile' ? 0.44 : screenType === 'tablet' ? 0.54 : 0.65;
+
+  // Trigger bloom intro when this 100dvh page comes into view
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
@@ -86,27 +101,27 @@ function GallerySection({ items = SPIDER_GALLERY_ITEMS }) {
     <section
       ref={sectionRef}
       id="multiverse-gallery"
-      className="h-screen w-full relative overflow-hidden flex flex-col justify-between bg-black text-white px-4 sm:px-8 pt-16 sm:pt-20 pb-4 select-none"
+      className="h-screen h-[100dvh] w-full max-w-full relative overflow-hidden flex flex-col justify-between bg-black text-white px-3 sm:px-8 pt-14 sm:pt-20 pb-2 sm:pb-4 select-none"
     >
       {/* Top Header & Multiverse Info (Safe below fixed navbar, never clipped) */}
-      <div className="relative z-10 max-w-7xl mx-auto w-full pt-1 pb-2 flex-shrink-0 border-b border-white/10 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+      <div className="relative z-10 max-w-7xl mx-auto w-full pt-1 pb-1.5 sm:pb-2 flex-shrink-0 border-b border-white/10 flex flex-col sm:flex-row sm:items-end justify-between gap-1.5 sm:gap-2">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-            <span className="text-[10px] sm:text-xs font-mono font-semibold tracking-widest uppercase text-cyan-400">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
+            <span className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-cyan-400 animate-pulse" />
+            <span className="text-[9px] sm:text-xs font-mono font-semibold tracking-widest uppercase text-cyan-400">
               MULTIVERSE ARCHIVE // SECTOR-VORTEX
             </span>
           </div>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-white uppercase flex items-center gap-2 sm:gap-3">
+          <h2 className="text-xl sm:text-3xl md:text-4xl font-black tracking-tight text-white uppercase flex items-center gap-2 sm:gap-3">
             Character Gallery
-            <span className="text-[10px] sm:text-xs font-mono font-normal px-2 py-0.5 rounded bg-red-600/20 text-red-400 border border-red-500/30">
+            <span className="text-[9px] sm:text-xs font-mono font-normal px-1.5 sm:px-2 py-0.5 rounded bg-red-600/20 text-red-400 border border-red-500/30">
               {items.length} DIMENSIONS
             </span>
           </h2>
         </div>
 
         {/* Controls */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <div className="hidden sm:flex items-center gap-3 font-mono text-[11px] text-neutral-400 mr-1">
             <span>
               LENS: <strong className="text-white">VORTEX</strong>
@@ -117,24 +132,24 @@ function GallerySection({ items = SPIDER_GALLERY_ITEMS }) {
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <button
               type="button"
               onClick={handlePrev}
-              className="p-2 rounded-lg bg-neutral-900 border border-white/15 text-white hover:bg-neutral-800 hover:border-white/30 transition-all cursor-pointer active:scale-95"
+              className="p-1.5 sm:p-2 rounded-lg bg-neutral-900 border border-white/15 text-white hover:bg-neutral-800 hover:border-white/30 transition-all cursor-pointer active:scale-95"
               aria-label="Previous card"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
             <button
               type="button"
               onClick={handleNext}
-              className="p-2 rounded-lg bg-neutral-900 border border-white/15 text-white hover:bg-neutral-800 hover:border-white/30 transition-all cursor-pointer active:scale-95"
+              className="p-1.5 sm:p-2 rounded-lg bg-neutral-900 border border-white/15 text-white hover:bg-neutral-800 hover:border-white/30 transition-all cursor-pointer active:scale-95"
               aria-label="Next card"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
@@ -144,17 +159,17 @@ function GallerySection({ items = SPIDER_GALLERY_ITEMS }) {
 
       {/* 
         FlexCarousel Canvas Wrapper:
-        - Takes up remaining height of 100vh page via flex-1 min-h-0
-        - Perfectly straight & centered inside max-w-7xl
+        - Takes up remaining height of 100dvh page via flex-1 min-h-0
+        - Scaled cardHeight dynamically on mobile (0.44) so active cards, titles, and indices never clip
         - autoplay={true} with local images
       */}
-      <div className="relative z-10 max-w-7xl mx-auto w-full flex-1 min-h-0 my-3 overflow-hidden rounded-2xl bg-black border border-white/10 shadow-2xl shadow-black">
+      <div className="relative z-10 max-w-7xl mx-auto w-full flex-1 min-h-0 my-2 sm:my-3 overflow-hidden rounded-xl sm:rounded-2xl bg-black border border-white/10 shadow-2xl shadow-black">
         <FlexCarousel
           items={items}
           ref={carouselRef}
           preset="vortex"
           intro="bloom"
-          cardHeight={0.65}
+          cardHeight={cardHeight}
           focusOnClick={true}
           captions={true}
           captureWheel={true}

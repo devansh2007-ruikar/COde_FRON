@@ -281,7 +281,19 @@ const OptionWheel = ({
     if (!dragRef.current) return;
     dragRef.current = null;
     setIsDragging(false);
-    if (dragMovedRef.current) applyTarget(targetRef.current, true);
+    if (dragMovedRef.current) {
+      const cfg = cfgRef.current;
+      const cur = targetRef.current;
+      const maxIndex = cfg.count - 1;
+      // If user dragged past ends on touch, release to adjacent sections
+      if (!cfg.loop && cur > maxIndex + 0.35) {
+        smoothScrollToSection(2);
+      } else if (!cfg.loop && cur < -0.35) {
+        smoothScrollToSection(0);
+      } else {
+        applyTarget(targetRef.current, true);
+      }
+    }
   }, [applyTarget]);
 
   const handleItemClick = useCallback(

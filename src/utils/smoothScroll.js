@@ -36,8 +36,9 @@ export function smoothScrollToSection(targetIndex, duration = 1.25) {
   if (!container) return;
 
   const validIndex = Math.max(0, Math.min(SECTION_IDS.length - 1, targetIndex));
+  const targetEl = document.getElementById(SECTION_IDS[validIndex]);
   const pageHeight = container.clientHeight || window.innerHeight;
-  const targetTop = validIndex * pageHeight;
+  const targetTop = targetEl ? targetEl.offsetTop : validIndex * pageHeight;
 
   // If already at the target section, skip animation
   if (Math.abs(container.scrollTop - targetTop) < 3) {

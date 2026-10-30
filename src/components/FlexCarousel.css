@@ -142,3 +142,22 @@
     transition: none;
   }
 }
+
+/* Mobile responsive caption positioning & sizing */
+@media (max-width: 640px) {
+  .flex-carousel__caption {
+    top: calc(50% + var(--flex-carousel-half) * var(--flex-carousel-lift, 1) + 12px);
+    gap: 3px;
+    padding: 0 10px;
+  }
+  .flex-carousel__title {
+    font-size: 13px;
+    line-height: 1.25;
+  }
+  .flex-carousel__subtitle {
+    font-size: 11px;
+  }
+  .flex-carousel__count {
+    font-size: 10px;
+  }
+}

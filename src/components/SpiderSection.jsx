@@ -10,10 +10,18 @@ const WHEEL_ITEMS = [
   'Earth-199999 (Tom)'
 ];
 
+const MOBILE_WHEEL_ITEMS = [
+  'Miles',
+  'Tobey',
+  'Andrew',
+  'Tom'
+];
+
 /**
  * Clean, futuristic vector Radar Dial strictly anchored to:
  * right: 0; top: 50%; transform: translateY(-50%);
  * Features radial tick marks along circular arc, concentric radar ring, and active target reticle.
+ * Dynamically scales down on mobile without blocking cards or text.
  */
 const FuturisticDial = memo(function FuturisticDial({ activeColor = '#e23636', activeIndex = 1 }) {
   const cx = 380;
@@ -52,7 +60,7 @@ const FuturisticDial = memo(function FuturisticDial({ activeColor = '#e23636', a
         top: '50%',
         transform: 'translateY(-50%)'
       }}
-      className="hidden sm:block w-[300px] sm:w-[340px] md:w-[380px] h-[560px] pointer-events-none z-10 overflow-visible select-none"
+      className="block w-[110px] xs:w-[130px] sm:w-[300px] md:w-[380px] h-[340px] sm:h-[560px] pointer-events-none z-10 overflow-visible select-none opacity-80 sm:opacity-100"
     >
       <svg
         viewBox="0 0 380 560"
@@ -148,17 +156,20 @@ const FuturisticDial = memo(function FuturisticDial({ activeColor = '#e23636', a
  */
 function SpiderSection() {
   const [selectedSpiderIndex, setSelectedSpiderIndex] = useState(1);
-  const [isMobile, setIsMobile] = useState(false);
+  const [screenType, setScreenType] = useState('desktop');
   const sectionRef = useRef(null);
   const wheelRef = useRef(null);
 
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+    const checkScreen = () => {
+      const w = window.innerWidth;
+      if (w < 640) setScreenType('mobile');
+      else if (w < 1024) setScreenType('tablet');
+      else setScreenType('desktop');
     };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    checkScreen();
+    window.addEventListener('resize', checkScreen);
+    return () => window.removeEventListener('resize', checkScreen);
   }, []);
 
   // Attach non-passive wheel listener to section so 100% of the screen area catches wheel gestures
@@ -191,36 +202,36 @@ function SpiderSection() {
     <section
       ref={sectionRef}
       id="spider-selection"
-      className="h-screen w-full relative overflow-hidden flex flex-col justify-between bg-black text-white px-6 sm:px-10 lg:px-16 pt-20 sm:pt-22 pb-5 select-none"
+      className="h-screen h-[100dvh] w-full max-w-full relative overflow-hidden flex flex-col justify-between bg-black text-white px-4 sm:px-10 lg:px-16 pt-16 sm:pt-22 pb-3 sm:pb-5 select-none"
     >
       {/* Ambient background glow keyed to current theme */}
       <div
-        className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[460px] h-[460px] rounded-full opacity-15 blur-[120px] pointer-events-none transition-all duration-700 z-0"
+        className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[260px] sm:w-[460px] h-[260px] sm:h-[460px] rounded-full opacity-15 blur-[120px] pointer-events-none transition-all duration-700 z-0"
         style={{ backgroundColor: activeSpider.themeColor }}
       />
 
-      {/* Top Header - Compact, fits safely in 100vh */}
-      <div className="relative z-30 max-w-7xl mx-auto w-full flex-shrink-0 border-b border-white/10 pb-3 pointer-events-none">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+      {/* Top Header - Compact, fits safely in 100dvh */}
+      <div className="relative z-30 max-w-7xl mx-auto w-full flex-shrink-0 border-b border-white/10 pb-2 sm:pb-3 pointer-events-none">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-1.5 sm:gap-2">
           <div>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
               <span
-                className="w-2 h-2 rounded-full animate-ping"
+                className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full animate-ping"
                 style={{ backgroundColor: activeSpider.themeColor }}
               />
-              <span className="text-[11px] font-mono font-semibold tracking-widest uppercase text-red-500">
+              <span className="text-[10px] sm:text-[11px] font-mono font-semibold tracking-widest uppercase text-red-500">
                 DIMENSIONAL FREQUENCY // SECTOR-EARTH
               </span>
             </div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-white uppercase flex items-center gap-3">
+            <h2 className="text-xl sm:text-3xl md:text-4xl font-black tracking-tight text-white uppercase flex items-center gap-2 sm:gap-3">
               Multiverse Variant
-              <span className="text-[11px] font-mono font-normal px-2 py-0.5 rounded bg-white/10 text-neutral-300 border border-white/15">
+              <span className="text-[10px] sm:text-[11px] font-mono font-normal px-1.5 sm:px-2 py-0.5 rounded bg-white/10 text-neutral-300 border border-white/15">
                 {activeSpider.dimension}
               </span>
             </h2>
           </div>
 
-          <div className="font-mono text-xs text-neutral-400 flex items-center gap-3">
+          <div className="font-mono text-[10px] sm:text-xs text-neutral-400 flex items-center gap-2 sm:gap-3">
             <span>
               VARIANT: <strong className="text-white">{activeSpider.name}</strong>
             </span>
@@ -234,11 +245,11 @@ function SpiderSection() {
 
       {/* 
         Center Content Area:
-        - Left: Glassmorphic SpiderCard (z-30 pointer-events-auto for interactive dot clicking)
+        - Left: Glassmorphic SpiderCard with responsive right padding on mobile so it never overlaps the wheel
       */}
       <div className="relative z-30 max-w-7xl mx-auto w-full flex-1 min-h-0 flex items-center justify-between pointer-events-none">
         {/* Left Side: Glassmorphism Info Card */}
-        <div className="w-full lg:w-auto flex justify-center lg:justify-start pointer-events-auto">
+        <div className="w-full lg:w-auto flex justify-start pointer-events-auto pr-[105px] xs:pr-[125px] sm:pr-0">
           <SpiderCard
             selectedIndex={selectedSpiderIndex}
             activeIndex={selectedSpiderIndex}
@@ -249,34 +260,34 @@ function SpiderSection() {
 
       {/* 
         Radar Dial Graphic:
-        Anchored STRICTLY to right: 0; top: 50%; transform: translateY(-50%)
-        Direct child of the full-screen section so it touches the right edge of the screen!
+        Anchored to right: 0; top: 50%; transform: translateY(-50%)
+        Scaled cleanly on mobile to hug the edge without covering text
       */}
       <FuturisticDial activeColor={activeSpider.themeColor} activeIndex={selectedSpiderIndex} />
 
       {/* 
-        FULL-SCREEN OPTIONWHEEL SCROLL AREA:
-        Wrapped in absolute inset-0 w-full h-full z-20.
-        Catches all wheel scrolls regardless of cursor position.
-        Text curves cleanly along the right edge alongside the radar dial.
+        OPTIONWHEEL SCROLL & TOUCH AREA:
+        - On desktop: Full-screen (inset-0 w-full h-full) catching mouse wheel anywhere.
+        - On mobile: Attached to right edge (w-[110px] xs:w-[130px]), catching touch gestures on the radar dial
+          while allowing the left screen area to scroll smoothly.
       */}
-      <div className="absolute inset-0 w-full h-full z-20 overflow-hidden pointer-events-auto">
+      <div className="absolute inset-y-0 right-0 w-[110px] xs:w-[130px] sm:inset-0 sm:w-full h-full z-20 overflow-hidden pointer-events-auto">
         <OptionWheel
           ref={wheelRef}
-          items={WHEEL_ITEMS}
+          items={screenType === 'mobile' ? MOBILE_WHEEL_ITEMS : WHEEL_ITEMS}
           defaultSelected={1}
           side="right"
           activeColor="#ffffff"
           textColor="#737373"
-          curve={1.0}
-          tilt={25}
-          fontSize={isMobile ? 1.35 : 1.85}
-          spacing={3.5}
-          blur={1.5}
+          curve={screenType === 'mobile' ? 0.8 : 1.0}
+          tilt={screenType === 'mobile' ? 18 : 25}
+          fontSize={screenType === 'mobile' ? 0.95 : screenType === 'tablet' ? 1.35 : 1.85}
+          spacing={screenType === 'mobile' ? 2.5 : screenType === 'tablet' ? 3.0 : 3.5}
+          blur={screenType === 'mobile' ? 1.0 : 1.5}
           fade={0.3}
           minOpacity={0.08}
           smoothing={400}
-          inset={isMobile ? 16 : 24}
+          inset={screenType === 'mobile' ? 8 : screenType === 'tablet' ? 16 : 24}
           draggable={true}
           loop={false}
           onChange={handleWheelChange}
@@ -285,10 +296,10 @@ function SpiderSection() {
       </div>
 
       {/* Bottom Status / Navigation Cue */}
-      <div className="relative z-30 max-w-7xl mx-auto w-full flex-shrink-0 pt-2 flex items-center justify-between font-mono text-[10px] sm:text-[11px] text-neutral-500 border-t border-white/10 pointer-events-none">
-        <div className="flex items-center gap-2">
+      <div className="relative z-30 max-w-7xl mx-auto w-full flex-shrink-0 pt-2 flex items-center justify-between font-mono text-[9px] sm:text-[11px] text-neutral-500 border-t border-white/10 pointer-events-none">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-          <span>SCROLL ANYWHERE TO SHIFT DIMENSION</span>
+          <span>SWIPE DIAL TO SHIFT DIMENSION</span>
         </div>
         <div className="flex items-center gap-4 pointer-events-auto">
           <span className="hidden sm:inline">SCROLL PAST TOM TO GO TO GALLERY ↓</span>

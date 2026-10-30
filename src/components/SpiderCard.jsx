@@ -151,16 +151,16 @@ function SpiderCard({ selectedIndex, activeIndex, onSelectSpider, className = ''
   return (
     <article
       aria-label={`Spider-Man Profile: ${current.name}`}
-      className={`w-full max-w-md lg:max-w-[420px] select-none pointer-events-auto ${className}`}
+      className={`w-full max-w-[calc(100vw-110px)] xs:max-w-[calc(100vw-130px)] sm:max-w-md lg:max-w-[420px] select-none pointer-events-auto ${className}`}
     >
-      <div className="bg-white/[0.08] backdrop-blur-xl border border-white/20 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl shadow-black/80 relative overflow-hidden transition-colors duration-500 min-h-[470px] flex flex-col justify-between">
+      <div className="bg-white/[0.08] backdrop-blur-xl border border-white/20 rounded-xl sm:rounded-3xl p-3 sm:p-5 lg:p-6 shadow-2xl shadow-black/80 relative overflow-hidden transition-colors duration-500 min-h-0 sm:min-h-[470px] flex flex-col justify-between">
         
         {/* Specular top edge highlight */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
 
         {/* Ambient background glow smoothly transitioning with current suit theme */}
         <div
-          className="absolute -top-16 -right-16 w-44 h-44 rounded-full opacity-20 blur-3xl pointer-events-none transition-all duration-700"
+          className="absolute -top-16 -right-16 w-32 sm:w-44 h-32 sm:h-44 rounded-full opacity-20 blur-3xl pointer-events-none transition-all duration-700"
           style={{ backgroundColor: current.themeColor }}
         />
 
@@ -173,31 +173,31 @@ function SpiderCard({ selectedIndex, activeIndex, onSelectSpider, className = ''
           className="spider-card-fade-in flex-1 flex flex-col justify-between"
         >
           {/* Header Row: Dimension Badge & Timeline Index */}
-          <div className="flex items-center justify-between gap-2 mb-3 relative z-10">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-wider uppercase bg-white/10 border border-white/20 text-neutral-200">
+          <div className="flex items-center justify-between gap-2 mb-1.5 sm:mb-3 relative z-10">
+            <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase bg-white/10 border border-white/20 text-neutral-200">
               <span
                 className="w-1.5 h-1.5 rounded-full animate-ping"
                 style={{ backgroundColor: current.themeColor }}
               />
               {current.dimension}
             </span>
-            <span className="text-[11px] font-mono font-medium tracking-widest text-neutral-400">
+            <span className="text-[10px] sm:text-[11px] font-mono font-medium tracking-widest text-neutral-400">
               0{index + 1} // 04
             </span>
           </div>
 
           {/* Spider-Man Name & Era */}
-          <div className="mb-3 relative z-10">
-            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2">
+          <div className="mb-1.5 sm:mb-3 relative z-10">
+            <h2 className="text-base xs:text-lg sm:text-2xl font-black tracking-tight text-white flex items-center gap-1.5 sm:gap-2">
               {current.name}
             </h2>
-            <div className="text-[11px] font-medium uppercase tracking-wider text-neutral-300 mt-0.5">
+            <div className="text-[10px] sm:text-[11px] font-medium uppercase tracking-wider text-neutral-300 mt-0.5 truncate">
               {current.alias} &bull; <span style={{ color: current.themeColor }} className="font-semibold">{current.suitName}</span>
             </div>
           </div>
 
           {/* Card Preview Box: Dynamically Loads Local Image */}
-          <div className="relative w-full h-28 sm:h-32 rounded-xl overflow-hidden mb-3 border border-white/20 bg-gradient-to-br from-neutral-900/95 via-black to-neutral-950 flex items-center justify-center group shadow-inner">
+          <div className="relative w-full h-20 xs:h-24 sm:h-32 rounded-lg sm:rounded-xl overflow-hidden mb-2 sm:mb-3 border border-white/20 bg-gradient-to-br from-neutral-900/95 via-black to-neutral-950 flex items-center justify-center group shadow-inner flex-shrink-0">
             {/* Ambient theme glow */}
             <div
               className="absolute inset-0 opacity-25 blur-xl transition-all duration-700 pointer-events-none"
@@ -229,27 +229,27 @@ function SpiderCard({ selectedIndex, activeIndex, onSelectSpider, className = ''
             />
 
             {/* HUD Reticle & Details Overlay */}
-            <div className="relative z-10 w-full h-full p-2.5 flex flex-col justify-between pointer-events-none">
+            <div className="relative z-10 w-full h-full p-1.5 sm:p-2.5 flex flex-col justify-between pointer-events-none">
               <div className="flex items-center justify-between">
-                <span className="text-[9px] font-mono tracking-widest uppercase text-white font-bold px-2 py-0.5 rounded bg-black/60 border border-white/20 backdrop-blur-sm">
+                <span className="text-[8px] sm:text-[9px] font-mono tracking-widest uppercase text-white font-bold px-1.5 sm:px-2 py-0.5 rounded bg-black/60 border border-white/20 backdrop-blur-sm">
                   {current.badge}
                 </span>
-                <span className="text-[9px] font-mono tracking-wider text-neutral-300 bg-black/60 px-1.5 py-0.5 rounded border border-white/10 backdrop-blur-sm">
+                <span className="text-[8px] sm:text-[9px] font-mono tracking-wider text-neutral-300 bg-black/60 px-1.5 py-0.5 rounded border border-white/10 backdrop-blur-sm">
                   CAM_0{index + 1}
                 </span>
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 bg-black/60 px-2 py-0.5 rounded border border-white/10 backdrop-blur-sm">
-                  <div className="w-3.5 h-3.5 flex items-center justify-center text-white">
+                <div className="flex items-center gap-1 sm:gap-1.5 bg-black/60 px-1.5 sm:px-2 py-0.5 rounded border border-white/10 backdrop-blur-sm">
+                  <div className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex items-center justify-center text-white">
                     {current.svgEmblem}
                   </div>
-                  <span className="text-[10px] font-mono tracking-wider text-neutral-200 font-semibold truncate max-w-[190px]">
+                  <span className="text-[9px] sm:text-[10px] font-mono tracking-wider text-neutral-200 font-semibold truncate max-w-[130px] sm:max-w-[190px]">
                     {current.suitName}
                   </span>
                 </div>
                 <span
-                  className="w-2 h-2 rounded-full animate-ping"
+                  className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full animate-ping"
                   style={{ backgroundColor: current.themeColor }}
                 />
               </div>
@@ -260,36 +260,36 @@ function SpiderCard({ selectedIndex, activeIndex, onSelectSpider, className = ''
           </div>
 
           {/* Bio */}
-          <p className="text-xs text-neutral-300 leading-relaxed font-light mb-3 relative z-10 line-clamp-3">
+          <p className="text-[10px] sm:text-xs text-neutral-300 leading-relaxed font-light mb-2 sm:mb-3 relative z-10 line-clamp-2 sm:line-clamp-3">
             {current.bio}
           </p>
 
           {/* Suit Specs & Power Stats */}
-          <div className="space-y-1.5 mb-3 pt-2.5 border-t border-white/10 relative z-10">
+          <div className="space-y-1 sm:space-y-1.5 mb-2 sm:mb-3 pt-1.5 sm:pt-2.5 border-t border-white/10 relative z-10">
             {current.stats.map((stat, i) => (
-              <div key={i} className="flex items-center justify-between text-[11px]">
-                <span className="text-neutral-400 font-medium">{stat.label}</span>
-                <span className="font-mono font-bold text-white tracking-wide">{stat.value}</span>
+              <div key={i} className="flex items-center justify-between text-[10px] sm:text-[11px]">
+                <span className="text-neutral-400 font-medium truncate max-w-[170px] sm:max-w-none">{stat.label}</span>
+                <span className="font-mono font-bold text-white tracking-wide ml-2">{stat.value}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Interactive Dimension Switcher Dots */}
-        <div className="flex items-center justify-between pt-2.5 border-t border-white/10 relative z-10 flex-shrink-0">
-          <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-mono">
+        <div className="flex items-center justify-between pt-1.5 sm:pt-2.5 border-t border-white/10 relative z-10 flex-shrink-0">
+          <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-neutral-400 font-mono">
             Dimension:
           </span>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 sm:gap-1.5">
             {SPIDER_MEN.map((s, idx) => (
               <button
                 key={s.id}
                 type="button"
                 onClick={() => onSelectSpider && onSelectSpider(idx)}
-                className={`h-2 transition-all duration-300 rounded-full cursor-pointer ${
+                className={`h-1.5 sm:h-2 transition-all duration-300 rounded-full cursor-pointer ${
                   index === idx
-                    ? 'w-6 bg-white shadow-md shadow-white/50'
-                    : 'w-2 bg-white/20 hover:bg-white/40'
+                    ? 'w-5 sm:w-6 bg-white shadow-md shadow-white/50'
+                    : 'w-1.5 sm:w-2 bg-white/20 hover:bg-white/40'
                 }`}
                 aria-label={`Select ${s.name}`}
               />

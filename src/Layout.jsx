@@ -29,7 +29,7 @@ export default function Layout({ children, activeIndex = 0, onNavChange }) {
   }, []);
 
   return (
-    <div className="h-screen w-full bg-black text-white relative overflow-hidden select-none">
+    <div className="h-screen h-[100dvh] w-full max-w-full bg-black text-white relative overflow-hidden select-none">
       {/* Subtle graph-paper grid background fixed across the entire application */}
       <div 
         className="fixed inset-0 z-0 opacity-20 pointer-events-none"
@@ -48,7 +48,7 @@ export default function Layout({ children, activeIndex = 0, onNavChange }) {
       {/* The Smooth Scroll Container (harsh snapping removed) */}
       <main
         id="snap-container"
-        className="h-screen w-full overflow-y-auto relative z-10"
+        className="h-screen h-[100dvh] w-full max-w-full overflow-y-auto relative z-10 overscroll-none"
       >
         {children}
       </main>

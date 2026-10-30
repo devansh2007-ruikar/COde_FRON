@@ -1,23 +1,46 @@
 /* Spider-Verse Hero Section & Chromatic Aberration Glitch Typography */
 
-.hero-glitch-container {
-  cursor: none;
+/* Custom cursor enabled strictly on devices with mouse/fine pointer */
+@media (hover: hover) and (pointer: fine) {
+  .hero-glitch-container {
+    cursor: none;
+  }
+
+  .hero-glitch-container a,
+  .hero-glitch-container button {
+    cursor: none;
+  }
 }
 
-.hero-glitch-container a,
-.hero-glitch-container button {
-  cursor: none;
+/* Touch devices: standard pointer interactions restored, custom cursor overlay hidden */
+@media (pointer: coarse), (hover: none) {
+  .hero-glitch-container {
+    cursor: auto !important;
+  }
+
+  .hero-glitch-container a,
+  .hero-glitch-container button {
+    cursor: pointer !important;
+  }
+
+  .hero-cursor-overlay {
+    display: none !important;
+    pointer-events: none !important;
+  }
 }
 
 .glitch-title {
   position: relative;
   display: inline-block;
   color: #ffffff;
-  letter-spacing: -0.05em;
-  line-height: 0.9;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
   text-transform: uppercase;
   font-weight: 900;
   text-shadow: 0 0 20px rgba(226, 54, 54, 0.4);
+  font-size: clamp(2.6rem, 11vw, 8.5rem);
+  max-width: 100%;
+  word-break: break-word;
 }
 
 .glitch-title::before,
