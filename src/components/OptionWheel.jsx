@@ -51,8 +51,8 @@ const OptionWheel = ({
   const onChangeRef = useRef(onChange);
   const selectedRef = useRef(defaultSelected);
   const wheelTimerRef = useRef(null);
-  const lastWheelStepRef = useRef(0);
   const lastScrollReleaseRef = useRef(0);
+  const scrollAccumulatorRef = useRef(0);
   const dragRef = useRef(null);
   const dragMovedRef = useRef(false);
   const audioRef = useRef(null);
@@ -175,12 +175,11 @@ const OptionWheel = ({
   );
 
   /**
-   * Universal Wheel Processor:
-   * - Stepping: Inside the wheel (options 0 to count-1), each wheel action steps by exactly 1 item smoothly.
-   * - Release at End: If scrolling down while on the last option, releases the scroll trap and
-   *   smoothly triggers scroll to Page 3 (#multiverse-gallery).
-   * - Release at Start: If scrolling up while on the first option, releases the scroll trap and
-   *   smoothly triggers scroll to Page 1 (#hero-dimension).
+   * Universal Wheel Processor with Heavy Scroll Accumulator:
+   * - Uses a scroll delta accumulator (threshold: 150) to force deliberate, heavy scrolling.
+   * - Eliminates hyper-sensitive flipping on trackpads and free-spin wheels.
+   * - Release at End: If scrolling down while on the last option, releases scroll to Page 3 (#multiverse-gallery).
+   * - Release at Start: If scrolling up while on the first option, releases scroll to Page 1 (#hero-dimension).
    */
   const processWheel = useCallback((e) => {
     if (e._handledByWheel) return;
@@ -188,7 +187,7 @@ const OptionWheel = ({
 
     const cfg = cfgRef.current;
     const delta = e.deltaY;
-    if (Math.abs(delta) < 3) return;
+    if (Math.abs(delta) < 1) return;
 
     const maxIndex = cfg.count - 1;
     const curIndex = selectedRef.current;
@@ -218,17 +217,27 @@ const OptionWheel = ({
       return; // Do NOT preventDefault! Allow native scroll up to Hero!
     }
 
-    // Inside active wheel boundaries: step options
+    // Inside active wheel boundaries: intercept scroll
     if (e.cancelable) {
       e.preventDefault();
     }
 
-    // Throttled single-step per scroll gesture to prevent erratic rapid spinning
-    if (now - lastWheelStepRef.current > 110) {
-      lastWheelStepRef.current = now;
-      const dir = delta > 0 ? 1 : -1;
-      const nextTarget = Math.min(Math.max(curIndex + dir, 0), maxIndex);
-      applyTarget(nextTarget, true);
+    // Accumulate wheel delta
+    scrollAccumulatorRef.current += delta;
+
+    // Reset accumulator when user pauses scrolling (350ms idle)
+    if (wheelTimerRef.current) clearTimeout(wheelTimerRef.current);
+    wheelTimerRef.current = setTimeout(() => {
+      scrollAccumulatorRef.current = 0;
+    }, 350);
+
+    // Threshold Trigger: deliberate, heavy scroll (> 150 or < -150)
+    if (scrollAccumulatorRef.current > 150) {
+      scrollAccumulatorRef.current = 0;
+      applyTarget(targetRef.current + 1, true);
+    } else if (scrollAccumulatorRef.current < -150) {
+      scrollAccumulatorRef.current = 0;
+      applyTarget(targetRef.current - 1, true);
     }
   }, [applyTarget]);
 

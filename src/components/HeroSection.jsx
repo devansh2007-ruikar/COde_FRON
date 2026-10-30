@@ -88,7 +88,7 @@ function HeroSection({ onExploreClick }) {
       {/* Interactive WebGL2 duotone Halftone Canvas */}
       <div
         ref={halftoneContainerRef}
-        className="absolute inset-0 z-0 pointer-events-none"
+        className="absolute inset-0 z-0 pointer-events-auto"
       >
         <HalftoneReveal
           src={src}
@@ -105,7 +105,8 @@ function HeroSection({ onExploreClick }) {
           dotScale={1.05}
           contrast={1.15}
           clickBurst={true}
-          wander={true}
+          wander={false}
+          intro={false}
         />
       </div>
 
@@ -115,29 +116,29 @@ function HeroSection({ onExploreClick }) {
 
       {/* Hero Typography & Content (Centered vertically in 100vh) */}
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-12 lg:px-16 flex-1 min-h-0 flex flex-col justify-center pointer-events-none">
-        <div className="max-w-2xl flex flex-col gap-4 sm:gap-5">
+        <div className="max-w-2xl flex flex-col gap-4 sm:gap-5 pointer-events-none">
           
           {/* Dimension Tag */}
-          <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-950/60 border border-red-500/40 text-red-400 font-mono text-xs uppercase tracking-widest backdrop-blur-md">
+          <div className="flex items-center gap-3 pointer-events-none">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-950/60 border border-red-500/40 text-red-400 font-mono text-xs uppercase tracking-widest backdrop-blur-md pointer-events-none">
               <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
               Dimension Earth-1610 // Active
             </span>
-            <span className="hidden sm:inline font-mono text-xs text-neutral-400 tracking-wider">
+            <span className="hidden sm:inline font-mono text-xs text-neutral-400 tracking-wider pointer-events-none">
               QUANTUM PARTICLES
             </span>
           </div>
 
           {/* Glitch Title */}
           <h1
-            className="glitch-title text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black tracking-tighter"
+            className="glitch-title text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black tracking-tighter pointer-events-none select-none"
             data-text="SPIDER-MAN"
           >
             SPIDER-MAN
           </h1>
 
           {/* Subtitle */}
-          <p className="text-neutral-300 text-sm sm:text-base md:text-lg max-w-lg font-light leading-relaxed">
+          <p className="text-neutral-300 text-sm sm:text-base md:text-lg max-w-lg font-light leading-relaxed pointer-events-none">
             Traverse dimension-hopping anomalies with duotone halftone aesthetics. Move your cursor or click anywhere to disrupt quantum particles.
           </p>
 

@@ -268,9 +268,9 @@ function SpiderSection() {
           activeColor="#ffffff"
           textColor="#737373"
           curve={1.0}
-          tilt={8}
+          tilt={25}
           fontSize={isMobile ? 1.35 : 1.85}
-          spacing={1.35}
+          spacing={3.5}
           blur={1.5}
           fade={0.3}
           minOpacity={0.08}
