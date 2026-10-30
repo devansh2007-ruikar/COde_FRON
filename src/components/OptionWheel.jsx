@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useCallback, useEffect, forwardRef, useImperativeHandle, memo } from 'react';
+import { smoothScrollToSection } from '../utils/smoothScroll';
 import './OptionWheel.css';
 
 const DEFAULT_ITEMS = [
@@ -195,26 +196,22 @@ const OptionWheel = ({
 
     // SCROLL DOWN RELEASE: Only when already at LAST item (Tom Holland, index 3) and scrolling down
     if (!cfg.loop && delta > 0 && curIndex >= maxIndex) {
-      if (now - lastScrollReleaseRef.current > 350) {
+      if (e.cancelable) e.preventDefault();
+      if (now - lastScrollReleaseRef.current > 400) {
         lastScrollReleaseRef.current = now;
-        const page3 = document.getElementById('multiverse-gallery');
-        if (page3) {
-          page3.scrollIntoView({ behavior: 'smooth' });
-        }
+        smoothScrollToSection(2);
       }
-      return; // Do NOT preventDefault! Allow native scroll down to Gallery!
+      return;
     }
 
     // SCROLL UP RELEASE: Only when already at FIRST item (Miles Morales, index 0) and scrolling up
     if (!cfg.loop && delta < 0 && curIndex <= 0) {
-      if (now - lastScrollReleaseRef.current > 350) {
+      if (e.cancelable) e.preventDefault();
+      if (now - lastScrollReleaseRef.current > 400) {
         lastScrollReleaseRef.current = now;
-        const page1 = document.getElementById('hero-dimension');
-        if (page1) {
-          page1.scrollIntoView({ behavior: 'smooth' });
-        }
+        smoothScrollToSection(0);
       }
-      return; // Do NOT preventDefault! Allow native scroll up to Hero!
+      return;
     }
 
     // Inside active wheel boundaries: intercept scroll

@@ -1,13 +1,14 @@
 import React, { useRef, useCallback, useEffect, memo } from 'react';
 import HalftoneReveal from './HalftoneReveal';
+import { smoothScrollToSection, isScrollAnimating } from '../utils/smoothScroll';
 import './HeroSection.css';
 
 /**
  * Page 1: Hero Section
- * Strict 100vh Full-screen Snap Section:
+ * Full-screen Section:
  * - Single interactive duotone HalftoneReveal canvas
  * - Hardware-accelerated cursor with spinning SVG label
- * - Fits cleanly within 100vh with h-screen w-full snap-start
+ * - Fits cleanly within 100vh with cinematic smooth scroll
  */
 function HeroSection({ onExploreClick }) {
   const heroWrapperRef = useRef(null);
@@ -43,6 +44,42 @@ function HeroSection({ onExploreClick }) {
     };
   }, []);
 
+  // Smooth cinematic wheel navigation to Section 1
+  useEffect(() => {
+    const el = heroWrapperRef.current;
+    if (!el) return;
+
+    let accumulator = 0;
+    let timer = null;
+
+    const onWheel = (e) => {
+      if (isScrollAnimating()) {
+        if (e.cancelable) e.preventDefault();
+        return;
+      }
+
+      if (e.deltaY > 0) {
+        if (e.cancelable) e.preventDefault();
+        accumulator += e.deltaY;
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(() => {
+          accumulator = 0;
+        }, 350);
+
+        if (accumulator > 60) {
+          accumulator = 0;
+          smoothScrollToSection(1);
+        }
+      }
+    };
+
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => {
+      el.removeEventListener('wheel', onWheel);
+      if (timer) clearTimeout(timer);
+    };
+  }, []);
+
   const handlePointer = useCallback((e) => {
     if (!heroWrapperRef.current) return;
     const rect = heroWrapperRef.current.getBoundingClientRect();
@@ -69,17 +106,14 @@ function HeroSection({ onExploreClick }) {
       onExploreClick();
       return;
     }
-    const target = document.getElementById('spider-selection');
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth' });
-    }
+    smoothScrollToSection(1);
   }, [onExploreClick]);
 
   return (
     <section
       ref={heroWrapperRef}
       id="hero-dimension"
-      className="hero-glitch-container h-screen w-full snap-start relative overflow-hidden bg-black text-white select-none flex flex-col justify-between pt-20 pb-5"
+      className="hero-glitch-container h-screen w-full relative overflow-hidden bg-black text-white select-none flex flex-col justify-between pt-20 pb-5"
       onPointerMove={handlePointer}
       onPointerDown={handlePointer}
       onPointerEnter={handlePointer}

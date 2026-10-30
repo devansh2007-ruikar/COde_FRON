@@ -1,19 +1,21 @@
 import React, { memo, useRef, useEffect, useCallback } from 'react';
 import FlexCarousel from './FlexCarousel';
 import { SPIDER_GALLERY_ITEMS } from '../data/galleryData';
+import { smoothScrollToSection, isScrollAnimating } from '../utils/smoothScroll';
 
 /**
  * Page 3: Character Gallery (FlexCarousel)
- * Strict 100vh Full-screen Snap Section:
+ * Full-screen Section:
  * - Proper top padding (pt-16 sm:pt-20) safely below fixed header so title is never cut off.
  * - The FlexCarousel takes up the remaining height of the page (flex-1 min-h-0) without overflowing.
  * - Local images (10 characters) with autoplay={true} enabled.
+ * - Relaxed cinematic smooth scrolling.
  */
 function GallerySection({ items = SPIDER_GALLERY_ITEMS }) {
   const sectionRef = useRef(null);
   const carouselRef = useRef(null);
 
-  // Trigger bloom intro when this 100vh snap page comes into view
+  // Trigger bloom intro when this 100vh page comes into view
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
@@ -31,6 +33,47 @@ function GallerySection({ items = SPIDER_GALLERY_ITEMS }) {
     return () => observer.disconnect();
   }, []);
 
+  // Smooth cinematic wheel navigation to Section 1 (when scrolling up outside carousel)
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+
+    let accumulator = 0;
+    let timer = null;
+
+    const onWheel = (e) => {
+      if (isScrollAnimating()) {
+        if (e.cancelable) e.preventDefault();
+        return;
+      }
+
+      // If scrolling UP outside the 3D flex carousel canvas
+      if (e.deltaY < 0) {
+        const inCarousel = e.target.closest('.flex-carousel');
+        if (inCarousel) return; // Allow carousel internal interaction
+
+        if (e.cancelable) e.preventDefault();
+        accumulator += e.deltaY;
+
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(() => {
+          accumulator = 0;
+        }, 350);
+
+        if (accumulator < -60) {
+          accumulator = 0;
+          smoothScrollToSection(1);
+        }
+      }
+    };
+
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => {
+      el.removeEventListener('wheel', onWheel);
+      if (timer) clearTimeout(timer);
+    };
+  }, []);
+
   const handlePrev = useCallback(() => {
     carouselRef.current?.step(-1);
   }, []);
@@ -43,7 +86,7 @@ function GallerySection({ items = SPIDER_GALLERY_ITEMS }) {
     <section
       ref={sectionRef}
       id="multiverse-gallery"
-      className="h-screen w-full snap-start relative overflow-hidden flex flex-col justify-between bg-black text-white px-4 sm:px-8 pt-16 sm:pt-20 pb-4 select-none"
+      className="h-screen w-full relative overflow-hidden flex flex-col justify-between bg-black text-white px-4 sm:px-8 pt-16 sm:pt-20 pb-4 select-none"
     >
       {/* Top Header & Multiverse Info (Safe below fixed navbar, never clipped) */}
       <div className="relative z-10 max-w-7xl mx-auto w-full pt-1 pb-2 flex-shrink-0 border-b border-white/10 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
@@ -137,10 +180,18 @@ function GallerySection({ items = SPIDER_GALLERY_ITEMS }) {
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => document.getElementById('hero-dimension')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => smoothScrollToSection(1)}
             className="text-neutral-400 hover:text-white transition-colors cursor-pointer uppercase"
           >
-            ↑ Back to Top
+            ↑ Multiverse Selection
+          </button>
+          <span>&bull;</span>
+          <button
+            type="button"
+            onClick={() => smoothScrollToSection(0)}
+            className="text-neutral-400 hover:text-white transition-colors cursor-pointer uppercase"
+          >
+            ↑ Top
           </button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect, memo } from 'react';
 import OptionWheel from './OptionWheel';
 import SpiderCard, { SPIDER_MEN } from './SpiderCard';
+import { smoothScrollToSection } from '../utils/smoothScroll';
 
 const WHEEL_ITEMS = [
   'Earth-1610 (Miles)',
@@ -190,7 +191,7 @@ function SpiderSection() {
     <section
       ref={sectionRef}
       id="spider-selection"
-      className="h-screen w-full snap-start relative overflow-hidden flex flex-col justify-between bg-black text-white px-6 sm:px-10 lg:px-16 pt-20 sm:pt-22 pb-5 select-none"
+      className="h-screen w-full relative overflow-hidden flex flex-col justify-between bg-black text-white px-6 sm:px-10 lg:px-16 pt-20 sm:pt-22 pb-5 select-none"
     >
       {/* Ambient background glow keyed to current theme */}
       <div
@@ -293,7 +294,7 @@ function SpiderSection() {
           <span className="hidden sm:inline">SCROLL PAST TOM TO GO TO GALLERY ↓</span>
           <button
             type="button"
-            onClick={() => document.getElementById('multiverse-gallery')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => smoothScrollToSection(2)}
             className="text-neutral-400 hover:text-red-400 transition-colors uppercase font-bold cursor-pointer"
           >
             Gallery ↓

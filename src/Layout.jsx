@@ -1,13 +1,33 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Navbar from './Navbar';
+import { smoothScrollToSection, getCurrentSectionIndex, isScrollAnimating } from './utils/smoothScroll';
 
 /**
- * Strict CSS Scroll Snap Layout:
- * - Fixed background grid and floating navigation
- * - Main container: `h-screen w-full overflow-y-scroll snap-y snap-mandatory`
- * - Holds the 3 full-screen pages (100vh each) with seamless snapping
+ * Relaxed Cinematic Layout:
+ * - Removed harsh CSS scroll snapping (snap-y snap-mandatory)
+ * - Managed smooth scrolling powered by GSAP ScrollToPlugin
+ * - Holds the 3 full-screen pages (100vh each) with deliberate, relaxed easing
  */
 export default function Layout({ children }) {
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (isScrollAnimating()) return;
+
+      if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+        e.preventDefault();
+        const current = getCurrentSectionIndex();
+        smoothScrollToSection(current + 1);
+      } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+        e.preventDefault();
+        const current = getCurrentSectionIndex();
+        smoothScrollToSection(current - 1);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
     <div className="h-screen w-full bg-black text-white relative overflow-hidden select-none">
       {/* Subtle graph-paper grid background fixed across the entire application */}
@@ -25,10 +45,10 @@ export default function Layout({ children }) {
       {/* Floating Header Navigation (Fixed top z-50) */}
       <Navbar />
 
-      {/* The Strict Snap Container */}
+      {/* The Smooth Scroll Container (harsh snapping removed) */}
       <main
         id="snap-container"
-        className="h-screen w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth relative z-10"
+        className="h-screen w-full overflow-y-auto relative z-10"
       >
         {children}
       </main>

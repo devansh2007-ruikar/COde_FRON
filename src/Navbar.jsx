@@ -2,6 +2,7 @@
 
 import React from 'react';
 import GooeyNav from './GooeyNav';
+import { smoothScrollToSection } from './utils/smoothScroll';
 
 const SpiderIcon = () => (
   <svg 
@@ -22,12 +23,7 @@ export default function Navbar() {
       href: '#',
       onClick: (e) => {
         e?.preventDefault();
-        const container = document.getElementById('snap-container');
-        if (container) {
-          container.scrollTo({ top: 0, behavior: 'smooth' });
-        } else {
-          document.getElementById('hero-dimension')?.scrollIntoView({ behavior: 'smooth' });
-        }
+        smoothScrollToSection(0);
       }
     },
     {
@@ -35,10 +31,7 @@ export default function Navbar() {
       href: '#spider-selection',
       onClick: (e) => {
         e?.preventDefault();
-        const el = document.getElementById('spider-selection');
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth' });
-        }
+        smoothScrollToSection(1);
       }
     }, 
     {
@@ -46,10 +39,7 @@ export default function Navbar() {
       href: '#multiverse-gallery',
       onClick: (e) => {
         e?.preventDefault();
-        const gallery = document.getElementById('multiverse-gallery');
-        if (gallery) {
-          gallery.scrollIntoView({ behavior: 'smooth' });
-        }
+        smoothScrollToSection(2);
       }
     }
   ];

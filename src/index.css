@@ -15,7 +15,13 @@
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   }
 
-  /* Clean scrollbar for the snap container */
+  /* Smooth scroll container setup */
+  #snap-container {
+    scroll-behavior: auto !important;
+    overscroll-behavior-y: none;
+  }
+
+  /* Clean scrollbar for the container */
   #snap-container::-webkit-scrollbar {
     width: 4px;
   }
