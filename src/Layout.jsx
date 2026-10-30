@@ -8,7 +8,7 @@ import { smoothScrollToSection, getCurrentSectionIndex, isScrollAnimating } from
  * - Managed smooth scrolling powered by GSAP ScrollToPlugin
  * - Holds the 3 full-screen pages (100vh each) with deliberate, relaxed easing
  */
-export default function Layout({ children }) {
+export default function Layout({ children, activeIndex = 0, onNavChange }) {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (isScrollAnimating()) return;
@@ -43,7 +43,7 @@ export default function Layout({ children }) {
       />
       
       {/* Floating Header Navigation (Fixed top z-50) */}
-      <Navbar />
+      <Navbar activeIndex={activeIndex} onNavChange={onNavChange} />
 
       {/* The Smooth Scroll Container (harsh snapping removed) */}
       <main

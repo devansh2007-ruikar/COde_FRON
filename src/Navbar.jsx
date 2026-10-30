@@ -16,7 +16,7 @@ const SpiderIcon = () => (
   </svg>
 );
 
-export default function Navbar() {
+export default function Navbar({ activeIndex = 0, onNavChange }) {
   const navItems = [
     {
       label: 'Home',
@@ -49,6 +49,8 @@ export default function Navbar() {
       <div className="pointer-events-auto">
         <GooeyNav
           items={navItems}
+          activeIndex={activeIndex}
+          onChange={onNavChange}
           initialActiveIndex={0}
           theme="dark"
           color="#e23636"
