@@ -22,6 +22,7 @@ const DEFAULT_ITEMS = [
 const OptionWheel = ({
   items = DEFAULT_ITEMS,
   defaultSelected = 1,
+  selectedIndex: controlledIndex,
   onChange,
   textColor = '#737373',
   activeColor = '#ffffff',
@@ -33,7 +34,7 @@ const OptionWheel = ({
   blur = 2,
   fade = 0.25,
   minOpacity = 0.05,
-  smoothing = 400,
+  smoothing = 180,
   inset = 50,
   loop = false,
   draggable = true,
@@ -43,14 +44,15 @@ const OptionWheel = ({
 }, ref) => {
   const rootRef = useRef(null);
   const itemRefs = useRef([]);
-  const posRef = useRef(defaultSelected);
-  const targetRef = useRef(defaultSelected);
+  const initialIndex = controlledIndex !== undefined ? controlledIndex : defaultSelected;
+  const posRef = useRef(initialIndex);
+  const targetRef = useRef(initialIndex);
+  const settledRef = useRef(initialIndex);
   const rafRef = useRef(null);
   const runFrameRef = useRef(null);
   const lastRef = useRef(0);
   const cfgRef = useRef({});
   const onChangeRef = useRef(onChange);
-  const settledRef = useRef(defaultSelected);
   const wheelTimerRef = useRef(null);
   const lastScrollReleaseRef = useRef(0);
   const scrollAccumulatorRef = useRef(0);
@@ -59,8 +61,10 @@ const OptionWheel = ({
   const audioRef = useRef(null);
   const audioUrlRef = useRef('');
   const lastTickRef = useRef(0);
-  const [selectedIndex, setSelectedIndex] = useState(defaultSelected);
+  const [internalSelected, setInternalSelected] = useState(initialIndex);
   const [isDragging, setIsDragging] = useState(false);
+
+  const activeSelected = controlledIndex !== undefined ? controlledIndex : internalSelected;
 
   const remPx = typeof window !== 'undefined' ? parseFloat(getComputedStyle(document.documentElement).fontSize) || 16 : 16;
 
@@ -100,7 +104,7 @@ const OptionWheel = ({
   }, []);
 
   // Frame-rate independent exponential smoothing
-  // Strict Index-Sync: ONLY update selectedIndex & onChange when wheel COMPLETELY settles!
+  // Strict Index-Sync: Updates state & onChange when wheel settles on target
   const runFrame = useCallback(now => {
     const dt = Math.min((now - lastRef.current) / 1000, 0.05);
     lastRef.current = now;
@@ -111,13 +115,16 @@ const OptionWheel = ({
     const target = targetRef.current;
     const cur = posRef.current;
     let next = cur + (target - cur) * k;
-    const settled = Math.abs(target - next) < 0.001;
+    const diff = Math.abs(target - next);
+
+    // Settled condition: when within 0.04 of the target, snap cleanly into place (~350-450ms)
+    const settled = diff < 0.04;
     if (settled) {
       next = target;
       const settledIdx = ((Math.round(target) % cfg.count) + cfg.count) % cfg.count;
       if (settledIdx !== settledRef.current) {
         settledRef.current = settledIdx;
-        setSelectedIndex(settledIdx);
+        setInternalSelected(settledIdx);
         onChangeRef.current?.(settledIdx, cfg.items[settledIdx]);
         playTick();
       }
@@ -173,17 +180,21 @@ const OptionWheel = ({
       if (!cfg.loop) v = Math.min(Math.max(v, 0), Math.max(cfg.count - 1, 0));
       if (snap) v = Math.round(v);
       targetRef.current = v;
-      // Do NOT trigger intermediate state changes while spinning/scrolling.
-      // Strict Index-Sync updates selectedIndex and onChange only in runFrame when settled === true.
       startLoop();
     },
     [startLoop]
   );
 
+  // Synchronize with external controlled index when provided
+  useEffect(() => {
+    if (controlledIndex !== undefined && Math.round(targetRef.current) !== controlledIndex) {
+      applyTarget(controlledIndex, true);
+    }
+  }, [controlledIndex, applyTarget]);
+
   /**
-   * Universal Wheel Processor with Heavy Scroll Accumulator:
-   * - Uses a scroll delta accumulator (threshold: 150) to force deliberate, heavy scrolling.
-   * - Eliminates hyper-sensitive flipping on trackpads and free-spin wheels.
+   * Universal Wheel Processor:
+   * - Uses a balanced scroll delta accumulator (threshold: 60) for deliberate, responsive scrolling.
    * - Release at End: If scrolling down while on the last option, releases scroll to Page 3 (#multiverse-gallery).
    * - Release at Start: If scrolling up while on the first option, releases scroll to Page 1 (#hero-dimension).
    */
@@ -227,19 +238,21 @@ const OptionWheel = ({
     // Accumulate wheel delta
     scrollAccumulatorRef.current += delta;
 
-    // Reset accumulator when user pauses scrolling (350ms idle)
+    // Reset accumulator when user pauses scrolling (300ms idle)
     if (wheelTimerRef.current) clearTimeout(wheelTimerRef.current);
     wheelTimerRef.current = setTimeout(() => {
       scrollAccumulatorRef.current = 0;
-    }, 350);
+    }, 300);
 
-    // Threshold Trigger: deliberate, heavy scroll (> 150 or < -150)
-    if (scrollAccumulatorRef.current > 150) {
+    // Threshold Trigger: deliberate, responsive scroll (> 60 or < -60)
+    if (scrollAccumulatorRef.current > 60) {
       scrollAccumulatorRef.current = 0;
-      applyTarget(Math.round(targetRef.current) + 1, true);
-    } else if (scrollAccumulatorRef.current < -150) {
+      const nextIdx = Math.min(Math.round(targetRef.current) + 1, maxIndex);
+      applyTarget(nextIdx, true);
+    } else if (scrollAccumulatorRef.current < -60) {
       scrollAccumulatorRef.current = 0;
-      applyTarget(Math.round(targetRef.current) - 1, true);
+      const prevIdx = Math.max(Math.round(targetRef.current) - 1, 0);
+      applyTarget(prevIdx, true);
     }
   }, [applyTarget]);
 
@@ -266,47 +279,58 @@ const OptionWheel = ({
       const drag = dragRef.current;
       if (!drag) return;
       const dy = e.clientY - drag.y;
-      if (!dragMovedRef.current && Math.abs(dy) > 6) {
+      if (!dragMovedRef.current && Math.abs(dy) > 4) {
         dragMovedRef.current = true;
-        rootRef.current?.setPointerCapture(drag.id);
+        try {
+          rootRef.current?.setPointerCapture(drag.id);
+        } catch {}
       }
       if (dragMovedRef.current) {
-        applyTarget(drag.start - dy / (cfgRef.current.rowH * 1.5), false);
+        const rawTarget = drag.start - dy / (cfgRef.current.rowH * 1.5);
+        applyTarget(rawTarget, false);
       }
     },
     [applyTarget]
   );
 
   const handlePointerEnd = useCallback(() => {
-    if (!dragRef.current) return;
+    const drag = dragRef.current;
+    if (!drag) return;
+    const { id } = drag;
     dragRef.current = null;
     setIsDragging(false);
+    try {
+      if (rootRef.current?.hasPointerCapture(id)) {
+        rootRef.current?.releasePointerCapture(id);
+      }
+    } catch {}
+
+    const cfg = cfgRef.current;
+    const cur = targetRef.current;
+    const maxIndex = cfg.count - 1;
+
     if (dragMovedRef.current) {
-      const cfg = cfgRef.current;
-      const cur = targetRef.current;
-      const maxIndex = cfg.count - 1;
       // If user dragged past ends on touch, release to adjacent sections
       if (!cfg.loop && cur > maxIndex + 0.35) {
         smoothScrollToSection(2);
+        applyTarget(maxIndex, true);
       } else if (!cfg.loop && cur < -0.35) {
         smoothScrollToSection(0);
+        applyTarget(0, true);
       } else {
-        applyTarget(targetRef.current, true);
+        const snapped = Math.min(Math.max(Math.round(cur), 0), maxIndex);
+        applyTarget(snapped, true);
       }
+    } else {
+      const snapped = Math.min(Math.max(Math.round(cur), 0), maxIndex);
+      applyTarget(snapped, true);
     }
   }, [applyTarget]);
 
   const handleItemClick = useCallback(
     index => {
       if (dragMovedRef.current) return;
-      const cfg = cfgRef.current;
-      const cur = targetRef.current;
-      let d = index - (((cur % cfg.count) + cfg.count) % cfg.count);
-      if (cfg.loop && cfg.count > 1) {
-        if (d > cfg.count / 2) d -= cfg.count;
-        else if (d < -cfg.count / 2) d += cfg.count;
-      }
-      applyTarget(cur + d, true);
+      applyTarget(index, true);
     },
     [applyTarget]
   );
@@ -318,7 +342,12 @@ const OptionWheel = ({
       else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') delta = 1;
       if (delta == null) return;
       e.preventDefault();
-      applyTarget(Math.round(targetRef.current) + delta, true);
+      const cfg = cfgRef.current;
+      const maxIndex = cfg.count - 1;
+      const targetIdx = delta > 0
+        ? Math.min(Math.round(targetRef.current) + 1, maxIndex)
+        : Math.max(Math.round(targetRef.current) - 1, 0);
+      applyTarget(targetIdx, true);
     },
     [applyTarget]
   );
@@ -370,8 +399,8 @@ const OptionWheel = ({
             itemRefs.current[index] = el;
           }}
           role="option"
-          aria-selected={selectedIndex === index}
-          className={`option-wheel__item${selectedIndex === index ? ' option-wheel__item--selected' : ''}`}
+          aria-selected={activeSelected === index}
+          className={`option-wheel__item${activeSelected === index ? ' option-wheel__item--selected' : ''}`}
           onClick={() => handleItemClick(index)}
         >
           {label}

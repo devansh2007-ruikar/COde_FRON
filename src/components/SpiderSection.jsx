@@ -276,6 +276,7 @@ function SpiderSection() {
           ref={wheelRef}
           items={screenType === 'mobile' ? MOBILE_WHEEL_ITEMS : WHEEL_ITEMS}
           defaultSelected={1}
+          selectedIndex={selectedSpiderIndex}
           side="right"
           activeColor="#ffffff"
           textColor="#737373"
@@ -286,7 +287,7 @@ function SpiderSection() {
           blur={screenType === 'mobile' ? 1.0 : 1.5}
           fade={0.3}
           minOpacity={0.08}
-          smoothing={400}
+          smoothing={180}
           inset={screenType === 'mobile' ? 8 : screenType === 'tablet' ? 16 : 24}
           draggable={true}
           loop={false}
