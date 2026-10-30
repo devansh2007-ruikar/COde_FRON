@@ -287,7 +287,7 @@ function SpiderSection() {
           blur={screenType === 'mobile' ? 1.0 : 1.5}
           fade={0.3}
           minOpacity={0.08}
-          smoothing={180}
+          smoothing={550}
           inset={screenType === 'mobile' ? 8 : screenType === 'tablet' ? 16 : 24}
           draggable={true}
           loop={false}

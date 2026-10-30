@@ -34,7 +34,7 @@ const OptionWheel = ({
   blur = 2,
   fade = 0.25,
   minOpacity = 0.05,
-  smoothing = 180,
+  smoothing = 550,
   inset = 50,
   loop = false,
   draggable = true,
@@ -48,6 +48,12 @@ const OptionWheel = ({
   const posRef = useRef(initialIndex);
   const targetRef = useRef(initialIndex);
   const settledRef = useRef(initialIndex);
+  const endScrollAccumulatorRef = useRef(0);
+  const startScrollAccumulatorRef = useRef(0);
+  const settledAtEndRef = useRef(initialIndex === (items.length - 1) ? performance.now() : 0);
+  const settledAtStartRef = useRef(initialIndex === 0 ? performance.now() : 0);
+  const endTimerRef = useRef(null);
+  const startTimerRef = useRef(null);
   const rafRef = useRef(null);
   const runFrameRef = useRef(null);
   const lastRef = useRef(0);
@@ -117,8 +123,8 @@ const OptionWheel = ({
     let next = cur + (target - cur) * k;
     const diff = Math.abs(target - next);
 
-    // Settled condition: when within 0.04 of the target, snap cleanly into place (~350-450ms)
-    const settled = diff < 0.04;
+    // Settled condition: when within 0.08 of the target, snap cleanly into place
+    const settled = diff < 0.08;
     if (settled) {
       next = target;
       const settledIdx = ((Math.round(target) % cfg.count) + cfg.count) % cfg.count;
@@ -127,6 +133,13 @@ const OptionWheel = ({
         setInternalSelected(settledIdx);
         onChangeRef.current?.(settledIdx, cfg.items[settledIdx]);
         playTick();
+        if (settledIdx === cfg.count - 1) {
+          settledAtEndRef.current = performance.now();
+          endScrollAccumulatorRef.current = 0;
+        } else if (settledIdx === 0) {
+          settledAtStartRef.current = performance.now();
+          startScrollAccumulatorRef.current = 0;
+        }
       }
     }
     posRef.current = next;
@@ -194,9 +207,13 @@ const OptionWheel = ({
 
   /**
    * Universal Wheel Processor:
-   * - Uses a balanced scroll delta accumulator (threshold: 60) for deliberate, responsive scrolling.
-   * - Release at End: If scrolling down while on the last option, releases scroll to Page 3 (#multiverse-gallery).
-   * - Release at Start: If scrolling up while on the first option, releases scroll to Page 1 (#hero-dimension).
+   * - Uses a heavy scroll delta accumulator (> 480) for deliberate item switching.
+   * - Anti-Premature Page Breakout:
+   *   When scrolling down to the last item (Tom Holland), the user MUST:
+   *   1. Fully complete the visual arrival/settling on Tom Holland (no release while animating).
+   *   2. Experience Tom Holland (minimum dwell time / cooldown of 600ms).
+   *   3. Perform an EXPLICIT, heavy extra scroll step (> 500 accumulator) on the final item
+   *      before releasing down to the FlexCarousel gallery page (#multiverse-gallery).
    */
   const processWheel = useCallback((e) => {
     if (e._handledByWheel) return;
@@ -207,25 +224,61 @@ const OptionWheel = ({
     if (Math.abs(delta) < 1) return;
 
     const maxIndex = cfg.count - 1;
-    const curIndex = Math.round(targetRef.current);
+    const curTarget = Math.round(targetRef.current);
+    const isAtLastItem = curTarget >= maxIndex;
+    const isAtFirstItem = curTarget <= 0;
+    const isPhysicallySettledAtLast = isAtLastItem && Math.abs(posRef.current - maxIndex) < 0.08 && settledRef.current === maxIndex;
+    const isPhysicallySettledAtFirst = isAtFirstItem && Math.abs(posRef.current) < 0.08 && settledRef.current === 0;
     const now = performance.now();
 
-    // SCROLL DOWN RELEASE: Only when already at LAST item (Tom Holland, index 3) and scrolling down
-    if (!cfg.loop && delta > 0 && curIndex >= maxIndex) {
+    // SCROLL DOWN RELEASE: Only when ALREADY fully settled on the LAST item (Tom Holland)
+    // and after the user performs an explicit, heavy extra scroll step (> 500)
+    if (!cfg.loop && delta > 0 && isAtLastItem) {
       if (e.cancelable) e.preventDefault();
-      if (now - lastScrollReleaseRef.current > 400) {
-        lastScrollReleaseRef.current = now;
-        smoothScrollToSection(2);
+
+      // If wheel is still animating towards Tom or just arrived (< 600ms dwell time), absorb all momentum!
+      if (!isPhysicallySettledAtLast || (now - settledAtEndRef.current < 600)) {
+        return;
+      }
+
+      endScrollAccumulatorRef.current += delta;
+      if (endTimerRef.current) clearTimeout(endTimerRef.current);
+      endTimerRef.current = setTimeout(() => {
+        endScrollAccumulatorRef.current = 0;
+      }, 400);
+
+      // Explicit extra scroll step required on final item to break out to gallery
+      if (endScrollAccumulatorRef.current > 500) {
+        endScrollAccumulatorRef.current = 0;
+        if (now - lastScrollReleaseRef.current > 600) {
+          lastScrollReleaseRef.current = now;
+          smoothScrollToSection(2);
+        }
       }
       return;
     }
 
-    // SCROLL UP RELEASE: Only when already at FIRST item (Miles Morales, index 0) and scrolling up
-    if (!cfg.loop && delta < 0 && curIndex <= 0) {
+    // SCROLL UP RELEASE: Only when ALREADY fully settled on the FIRST item (Miles Morales)
+    // and after the user performs an explicit, heavy extra scroll step (< -500)
+    if (!cfg.loop && delta < 0 && isAtFirstItem) {
       if (e.cancelable) e.preventDefault();
-      if (now - lastScrollReleaseRef.current > 400) {
-        lastScrollReleaseRef.current = now;
-        smoothScrollToSection(0);
+
+      if (!isPhysicallySettledAtFirst || (now - settledAtStartRef.current < 600)) {
+        return;
+      }
+
+      startScrollAccumulatorRef.current += Math.abs(delta);
+      if (startTimerRef.current) clearTimeout(startTimerRef.current);
+      startTimerRef.current = setTimeout(() => {
+        startScrollAccumulatorRef.current = 0;
+      }, 400);
+
+      if (startScrollAccumulatorRef.current > 500) {
+        startScrollAccumulatorRef.current = 0;
+        if (now - lastScrollReleaseRef.current > 600) {
+          lastScrollReleaseRef.current = now;
+          smoothScrollToSection(0);
+        }
       }
       return;
     }
@@ -235,21 +288,20 @@ const OptionWheel = ({
       e.preventDefault();
     }
 
-    // Accumulate wheel delta
+    // Accumulate wheel delta for switching between characters
     scrollAccumulatorRef.current += delta;
 
-    // Reset accumulator when user pauses scrolling (300ms idle)
     if (wheelTimerRef.current) clearTimeout(wheelTimerRef.current);
     wheelTimerRef.current = setTimeout(() => {
       scrollAccumulatorRef.current = 0;
-    }, 300);
+    }, 400);
 
-    // Threshold Trigger: deliberate, responsive scroll (> 60 or < -60)
-    if (scrollAccumulatorRef.current > 60) {
+    // Heavy Threshold Trigger: deliberate, heavy scroll (> 480 or < -480)
+    if (scrollAccumulatorRef.current > 480) {
       scrollAccumulatorRef.current = 0;
       const nextIdx = Math.min(Math.round(targetRef.current) + 1, maxIndex);
       applyTarget(nextIdx, true);
-    } else if (scrollAccumulatorRef.current < -60) {
+    } else if (scrollAccumulatorRef.current < -480) {
       scrollAccumulatorRef.current = 0;
       const prevIdx = Math.max(Math.round(targetRef.current) - 1, 0);
       applyTarget(prevIdx, true);
@@ -310,11 +362,11 @@ const OptionWheel = ({
     const maxIndex = cfg.count - 1;
 
     if (dragMovedRef.current) {
-      // If user dragged past ends on touch, release to adjacent sections
-      if (!cfg.loop && cur > maxIndex + 0.35) {
+      // If user dragged past ends on touch, release to adjacent sections only with a deliberate swipe (> 0.75 past end)
+      if (!cfg.loop && cur > maxIndex + 0.75) {
         smoothScrollToSection(2);
         applyTarget(maxIndex, true);
-      } else if (!cfg.loop && cur < -0.35) {
+      } else if (!cfg.loop && cur < -0.75) {
         smoothScrollToSection(0);
         applyTarget(0, true);
       } else {
@@ -368,6 +420,9 @@ const OptionWheel = ({
     () => () => {
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
+      if (wheelTimerRef.current) clearTimeout(wheelTimerRef.current);
+      if (endTimerRef.current) clearTimeout(endTimerRef.current);
+      if (startTimerRef.current) clearTimeout(startTimerRef.current);
       audioRef.current?.pause();
     },
     []
