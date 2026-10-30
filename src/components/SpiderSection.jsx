@@ -10,21 +10,22 @@ const WHEEL_ITEMS = [
 ];
 
 /**
- * Clean, futuristic vector Half-Circle Dial attached permanently to the far-right edge.
- * Features precision radial ticks, dashed accent arc, glowing target reticle, and zero messy overlays.
+ * Clean, futuristic vector Radar Dial strictly anchored to:
+ * right: 0; top: 50%; transform: translateY(-50%);
+ * Features radial tick marks along circular arc, concentric radar ring, and active target reticle.
  */
-const FuturisticDial = memo(function FuturisticDial({ activeColor = '#e23636' }) {
-  const cx = 320;
-  const cy = 250;
-  const r = 240;
+const FuturisticDial = memo(function FuturisticDial({ activeColor = '#e23636', activeIndex = 1 }) {
+  const cx = 380;
+  const cy = 280;
+  const r = 280;
 
-  // Generate radial ticks along circular arc from -64 to +64 degrees
+  // Generate radial ticks along circular arc from -80 to +80 degrees
   const ticks = [];
-  for (let deg = -64; deg <= 64; deg += 4) {
+  for (let deg = -80; deg <= 80; deg += 4) {
     const rad = (deg * Math.PI) / 180;
     const isMajor = deg % 16 === 0;
     const isCenter = deg === 0;
-    const tickLen = isCenter ? 22 : isMajor ? 13 : 6;
+    const tickLen = isCenter ? 26 : isMajor ? 14 : 7;
 
     const x1 = cx - r * Math.cos(rad);
     const y1 = cy + r * Math.sin(rad);
@@ -42,34 +43,33 @@ const FuturisticDial = memo(function FuturisticDial({ activeColor = '#e23636' })
     });
   }
 
-  // Key frequency node dots along arc
-  const keyNodes = [-48, -24, 24, 48].map((deg) => {
-    const rad = (deg * Math.PI) / 180;
-    return {
-      deg,
-      x: cx - (r + 6) * Math.cos(rad),
-      y: cy + (r + 6) * Math.sin(rad)
-    };
-  });
-
   return (
-    <div className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2 w-[280px] sm:w-[320px] md:w-[360px] h-[500px] pointer-events-none z-10 overflow-visible select-none">
+    <div
+      style={{
+        position: 'absolute',
+        right: 0,
+        top: '50%',
+        transform: 'translateY(-50%)'
+      }}
+      className="hidden sm:block w-[300px] sm:w-[340px] md:w-[380px] h-[560px] pointer-events-none z-10 overflow-visible select-none"
+    >
       <svg
-        viewBox="0 0 320 500"
-        className="w-full h-full overflow-visible drop-shadow-[0_0_24px_rgba(226,54,54,0.25)]"
+        viewBox="0 0 380 560"
+        className="w-full h-full overflow-visible drop-shadow-[0_0_24px_rgba(226,54,54,0.3)]"
         fill="none"
       >
-        {/* Outer Continuous Guide Arc */}
+        {/* Outer Circular Arc touching right edge at top and bottom */}
         <path
-          d={`M ${cx - r * Math.cos((-66 * Math.PI) / 180)} ${cy + r * Math.sin((-66 * Math.PI) / 180)} A ${r} ${r} 0 0 0 ${cx - r * Math.cos((66 * Math.PI) / 180)} ${cy + r * Math.sin((66 * Math.PI) / 180)}`}
-          stroke="rgba(255, 255, 255, 0.2)"
+          d={`M ${cx} ${cy - r} A ${r} ${r} 0 0 0 ${cx} ${cy + r}`}
+          stroke="rgba(255, 255, 255, 0.22)"
           strokeWidth="1.5"
         />
 
-        {/* Inner Tech Dashed Accent Arc */}
+        {/* Inner Dashed Tech Radar Arc */}
         <path
-          d={`M ${cx - (r - 20) * Math.cos((-58 * Math.PI) / 180)} ${cy + (r - 20) * Math.sin((-58 * Math.PI) / 180)} A ${r - 20} ${r - 20} 0 0 0 ${cx - (r - 20) * Math.cos((58 * Math.PI) / 180)} ${cy + (r - 20) * Math.sin((58 * Math.PI) / 180)}`}
-          stroke="rgba(226, 54, 54, 0.4)"
+          d={`M ${cx} ${cy - (r - 28)} A ${r - 28} ${r - 28} 0 0 0 ${cx} ${cy + (r - 28)}`}
+          stroke={activeColor}
+          strokeOpacity="0.45"
           strokeWidth="1"
           strokeDasharray="4 6"
         />
@@ -86,22 +86,11 @@ const FuturisticDial = memo(function FuturisticDial({ activeColor = '#e23636' })
               t.isCenter
                 ? activeColor
                 : t.isMajor
-                ? 'rgba(255, 255, 255, 0.55)'
-                : 'rgba(255, 255, 255, 0.18)'
+                ? 'rgba(255, 255, 255, 0.6)'
+                : 'rgba(255, 255, 255, 0.2)'
             }
             strokeWidth={t.isCenter ? 2.5 : t.isMajor ? 1.5 : 1}
             strokeLinecap="round"
-          />
-        ))}
-
-        {/* Node dots */}
-        {keyNodes.map((node) => (
-          <circle
-            key={node.deg}
-            cx={node.x}
-            cy={node.y}
-            r="2"
-            fill="rgba(255, 255, 255, 0.45)"
           />
         ))}
 
@@ -109,27 +98,38 @@ const FuturisticDial = memo(function FuturisticDial({ activeColor = '#e23636' })
         <circle
           cx={cx - r}
           cy={cy}
-          r="4"
+          r="4.5"
           fill={activeColor}
           className="animate-pulse"
         />
         <circle
           cx={cx - r}
           cy={cy}
-          r="9"
+          r="10"
           stroke={activeColor}
           strokeWidth="1.2"
-          opacity="0.75"
+          opacity="0.8"
         />
         <line
-          x1={cx - r + 13}
+          x1={cx - r + 14}
           y1={cy}
-          x2={cx - r + 26}
+          x2={cx - r + 30}
           y2={cy}
           stroke={activeColor}
           strokeWidth="1.5"
           strokeLinecap="round"
         />
+        <text
+          x={cx - r + 12}
+          y={cy - 12}
+          fill={activeColor}
+          fontSize="9"
+          fontFamily="monospace"
+          fontWeight="bold"
+          letterSpacing="0.1em"
+        >
+          RADAR_LOCK // 0{activeIndex + 1}
+        </text>
       </svg>
     </div>
   );
@@ -137,12 +137,13 @@ const FuturisticDial = memo(function FuturisticDial({ activeColor = '#e23636' })
 
 /**
  * Page 2: Character Selection (Card + OptionWheel)
- * Refinements:
- * - Removed messy red "ACTIVE ◀" background box and clipping panels.
- * - Added clean, futuristic SVG Half-Circle Dial attached permanently to the far-right edge with radial ticks.
- * - OptionWheel text curves cleanly alongside the dial with zero obstruction.
- * - Left-side Glassmorphism SpiderCard features smooth 0.5s crossfade on active state change.
- * - smoothing={400} preserves weighted, deliberate wheel browsing physics.
+ * Architecture & Fixes:
+ * - Full-Screen Scroll Catching: OptionWheel wrapped in `absolute inset-0 w-full h-full z-20`
+ *   with non-passive section-level wheel listener so scrolling ANYWHERE on Page 2 rotates the wheel.
+ * - Perfect Right-Edge Alignment: Radar dial graphic anchored strictly to right: 0; top: 50%; translateY(-50%).
+ *   OptionWheel text hugs this half-circle seamlessly.
+ * - Smooth Card Crossfade: Key-based dynamic container with 0.6s smooth CSS cubic-bezier fade-in.
+ * - Scroll Release: Reaching last index (Tom) releases scroll to Page 3; reaching first (Miles) releases to Page 1.
  */
 function SpiderSection() {
   const [selectedSpiderIndex, setSelectedSpiderIndex] = useState(1);
@@ -157,6 +158,21 @@ function SpiderSection() {
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Attach non-passive wheel listener to section so 100% of the screen area catches wheel gestures
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const handleWheel = (e) => {
+      wheelRef.current?.processWheel(e);
+    };
+
+    section.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      section.removeEventListener('wheel', handleWheel);
+    };
   }, []);
 
   const handleWheelChange = useCallback((index) => {
@@ -183,7 +199,7 @@ function SpiderSection() {
       />
 
       {/* Top Header - Compact, fits safely in 100vh */}
-      <div className="relative z-30 max-w-7xl mx-auto w-full flex-shrink-0 border-b border-white/10 pb-3">
+      <div className="relative z-30 max-w-7xl mx-auto w-full flex-shrink-0 border-b border-white/10 pb-3 pointer-events-none">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -217,29 +233,31 @@ function SpiderSection() {
 
       {/* 
         Center Content Area:
-        - Left: Glassmorphic SpiderCard at z-30 with smooth 0.5s crossfade
-        - Right: Clean futuristic vector Half-Circle Dial attached to far-right edge (pointer-events-none)
+        - Left: Glassmorphic SpiderCard (z-30 pointer-events-auto for interactive dot clicking)
       */}
-      <div className="relative z-30 max-w-7xl mx-auto w-full flex-1 min-h-0 flex items-center justify-between">
-        
+      <div className="relative z-30 max-w-7xl mx-auto w-full flex-1 min-h-0 flex items-center justify-between pointer-events-none">
         {/* Left Side: Glassmorphism Info Card */}
-        <div className="w-full lg:w-auto flex justify-center lg:justify-start">
+        <div className="w-full lg:w-auto flex justify-center lg:justify-start pointer-events-auto">
           <SpiderCard
+            selectedIndex={selectedSpiderIndex}
             activeIndex={selectedSpiderIndex}
             onSelectSpider={handleCardSelect}
           />
         </div>
-
-        {/* Right Side: Clean Futuristic Half-Circle Dial with ticks along the arc */}
-        <FuturisticDial activeColor={activeSpider.themeColor} />
-
       </div>
 
       {/* 
+        Radar Dial Graphic:
+        Anchored STRICTLY to right: 0; top: 50%; transform: translateY(-50%)
+        Direct child of the full-screen section so it touches the right edge of the screen!
+      */}
+      <FuturisticDial activeColor={activeSpider.themeColor} activeIndex={selectedSpiderIndex} />
+
+      {/* 
         FULL-SCREEN OPTIONWHEEL SCROLL AREA:
-        Spans absolute inset-0 w-full h-full at z-20.
-        Scrolling anywhere on Page 2 intercepts and rotates the wheel.
-        Items are visually curved alongside the futuristic dial with side="right".
+        Wrapped in absolute inset-0 w-full h-full z-20.
+        Catches all wheel scrolls regardless of cursor position.
+        Text curves cleanly along the right edge alongside the radar dial.
       */}
       <div className="absolute inset-0 w-full h-full z-20 overflow-hidden pointer-events-auto">
         <OptionWheel
@@ -249,7 +267,7 @@ function SpiderSection() {
           side="right"
           activeColor="#ffffff"
           textColor="#737373"
-          curve={1.5}
+          curve={1.0}
           tilt={8}
           fontSize={isMobile ? 1.35 : 1.85}
           spacing={1.35}
@@ -257,7 +275,7 @@ function SpiderSection() {
           fade={0.3}
           minOpacity={0.08}
           smoothing={400}
-          inset={isMobile ? 24 : 70}
+          inset={isMobile ? 16 : 24}
           draggable={true}
           loop={false}
           onChange={handleWheelChange}
@@ -266,12 +284,12 @@ function SpiderSection() {
       </div>
 
       {/* Bottom Status / Navigation Cue */}
-      <div className="relative z-30 max-w-7xl mx-auto w-full flex-shrink-0 pt-2 flex items-center justify-between font-mono text-[10px] sm:text-[11px] text-neutral-500 border-t border-white/10">
+      <div className="relative z-30 max-w-7xl mx-auto w-full flex-shrink-0 pt-2 flex items-center justify-between font-mono text-[10px] sm:text-[11px] text-neutral-500 border-t border-white/10 pointer-events-none">
         <div className="flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
           <span>SCROLL ANYWHERE TO SHIFT DIMENSION</span>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 pointer-events-auto">
           <span className="hidden sm:inline">SCROLL PAST TOM TO GO TO GALLERY ↓</span>
           <button
             type="button"

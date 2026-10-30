@@ -27,3 +27,22 @@
     border-radius: 9999px;
   }
 }
+
+/* Spider-Verse Cinematic Card Crossfade Transition (0.6s smooth duration) */
+@keyframes spiderCardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.spider-card-fade-in {
+  animation: spiderCardFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: opacity, transform, filter;
+}

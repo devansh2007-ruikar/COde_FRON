@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react';
+import React, { memo } from 'react';
 
 /**
  * 4 Spider-Men Profile Data aligned with the OptionWheel:
@@ -136,41 +136,20 @@ export const SPIDER_MEN = [
 /**
  * 2D Glassmorphism Profile Info Card:
  * Features:
- * - 0.5s smooth crossfade transition when activeIndex changes
- * - Stable, jitter-free outer card frame
- * - Dynamic theme color glow transition
+ * - Dynamic content keyed to `key={activeIndex}` with 0.6s smooth CSS crossfade animation
+ * - Rock-solid, stable outer frame with smooth ambient glow transition
+ * - Zero abrupt snapping
  */
-function SpiderCard({ activeIndex = 1, onSelectSpider, className = '' }) {
-  const [displayIndex, setDisplayIndex] = useState(activeIndex);
-  const [isCrossfading, setIsCrossfading] = useState(false);
-
-  // Smooth 0.5s crossfade transition (fade out 240ms, swap data, fade in 260ms)
-  useEffect(() => {
-    let timerB;
-    if (activeIndex !== displayIndex) {
-      const timerA = setTimeout(() => {
-        setIsCrossfading(true);
-      }, 0);
-      timerB = setTimeout(() => {
-        setDisplayIndex(activeIndex);
-        setIsCrossfading(false);
-      }, 240);
-
-      return () => {
-        clearTimeout(timerA);
-        clearTimeout(timerB);
-      };
-    }
-  }, [activeIndex, displayIndex]);
-
-  const current = SPIDER_MEN[displayIndex] || SPIDER_MEN[1];
+function SpiderCard({ selectedIndex, activeIndex, onSelectSpider, className = '' }) {
+  const index = selectedIndex ?? activeIndex ?? 1;
+  const current = SPIDER_MEN[index] || SPIDER_MEN[1];
 
   return (
     <article
       aria-label={`Spider-Man Profile: ${current.name}`}
       className={`w-full max-w-md lg:max-w-[420px] select-none pointer-events-auto ${className}`}
     >
-      <div className="bg-white/[0.08] backdrop-blur-xl border border-white/20 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl shadow-black/80 relative overflow-hidden transition-colors duration-500 min-h-[460px] flex flex-col justify-between">
+      <div className="bg-white/[0.08] backdrop-blur-xl border border-white/20 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl shadow-black/80 relative overflow-hidden transition-colors duration-500 min-h-[470px] flex flex-col justify-between">
         
         {/* Specular top edge highlight */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
@@ -182,15 +161,12 @@ function SpiderCard({ activeIndex = 1, onSelectSpider, className = '' }) {
         />
 
         {/* 
-          Smooth Crossfading Content Block:
-          Fades out and glides slightly, then crossfades in smoothly over 0.5s
+          Dynamic Content Container wrapped with React key={index}:
+          Re-mounts on index change and runs a smooth 0.6s cinematic fade-in animation!
         */}
         <div
-          className={`flex-1 flex flex-col justify-between transition-all duration-300 ease-out ${
-            isCrossfading
-              ? 'opacity-0 translate-y-2 scale-[0.98] blur-[2px]'
-              : 'opacity-100 translate-y-0 scale-100 blur-0'
-          }`}
+          key={index}
+          className="spider-card-fade-in flex-1 flex flex-col justify-between"
         >
           {/* Header Row: Dimension Badge & Timeline Index */}
           <div className="flex items-center justify-between gap-2 mb-3 relative z-10">
@@ -202,7 +178,7 @@ function SpiderCard({ activeIndex = 1, onSelectSpider, className = '' }) {
               {current.dimension}
             </span>
             <span className="text-[11px] font-mono font-medium tracking-widest text-neutral-400">
-              0{displayIndex + 1} // 04
+              0{index + 1} // 04
             </span>
           </div>
 
@@ -260,7 +236,7 @@ function SpiderCard({ activeIndex = 1, onSelectSpider, className = '' }) {
           </div>
         </div>
 
-        {/* Interactive Dimension Switcher Dots (Immediate tactile feedback) */}
+        {/* Interactive Dimension Switcher Dots */}
         <div className="flex items-center justify-between pt-2.5 border-t border-white/10 relative z-10 flex-shrink-0">
           <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-mono">
             Dimension:
@@ -272,7 +248,7 @@ function SpiderCard({ activeIndex = 1, onSelectSpider, className = '' }) {
                 type="button"
                 onClick={() => onSelectSpider && onSelectSpider(idx)}
                 className={`h-2 transition-all duration-300 rounded-full cursor-pointer ${
-                  activeIndex === idx
+                  index === idx
                     ? 'w-6 bg-white shadow-md shadow-white/50'
                     : 'w-2 bg-white/20 hover:bg-white/40'
                 }`}

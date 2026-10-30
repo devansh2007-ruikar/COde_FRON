@@ -22,8 +22,8 @@ const OptionWheel = ({
   items = DEFAULT_ITEMS,
   defaultSelected = 1,
   onChange,
-  textColor = '#444444',
-  activeColor = '#e23636',
+  textColor = '#737373',
+  activeColor = '#ffffff',
   side = 'right',
   fontSize = 2,
   spacing = 1.4,
@@ -175,68 +175,73 @@ const OptionWheel = ({
   );
 
   /**
-   * Scroll Release Logic:
+   * Universal Wheel Processor:
    * - Stepping: Inside the wheel (options 0 to count-1), each wheel action steps by exactly 1 item smoothly.
    * - Release at End: If scrolling down while on the last option, releases the scroll trap and
    *   smoothly triggers scroll to Page 3 (#multiverse-gallery).
    * - Release at Start: If scrolling up while on the first option, releases the scroll trap and
    *   smoothly triggers scroll to Page 1 (#hero-dimension).
    */
+  const processWheel = useCallback((e) => {
+    if (e._handledByWheel) return;
+    e._handledByWheel = true;
+
+    const cfg = cfgRef.current;
+    const delta = e.deltaY;
+    if (Math.abs(delta) < 3) return;
+
+    const maxIndex = cfg.count - 1;
+    const curIndex = selectedRef.current;
+    const now = performance.now();
+
+    // SCROLL DOWN RELEASE: Only when already at LAST item (Tom Holland, index 3) and scrolling down
+    if (!cfg.loop && delta > 0 && curIndex >= maxIndex) {
+      if (now - lastScrollReleaseRef.current > 350) {
+        lastScrollReleaseRef.current = now;
+        const page3 = document.getElementById('multiverse-gallery');
+        if (page3) {
+          page3.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+      return; // Do NOT preventDefault! Allow native scroll down to Gallery!
+    }
+
+    // SCROLL UP RELEASE: Only when already at FIRST item (Miles Morales, index 0) and scrolling up
+    if (!cfg.loop && delta < 0 && curIndex <= 0) {
+      if (now - lastScrollReleaseRef.current > 350) {
+        lastScrollReleaseRef.current = now;
+        const page1 = document.getElementById('hero-dimension');
+        if (page1) {
+          page1.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+      return; // Do NOT preventDefault! Allow native scroll up to Hero!
+    }
+
+    // Inside active wheel boundaries: step options
+    if (e.cancelable) {
+      e.preventDefault();
+    }
+
+    // Throttled single-step per scroll gesture to prevent erratic rapid spinning
+    if (now - lastWheelStepRef.current > 110) {
+      lastWheelStepRef.current = now;
+      const dir = delta > 0 ? 1 : -1;
+      const nextTarget = Math.min(Math.max(curIndex + dir, 0), maxIndex);
+      applyTarget(nextTarget, true);
+    }
+  }, [applyTarget]);
+
   useEffect(() => {
     const el = rootRef.current;
     if (!el) return;
 
-    const onWheel = e => {
-      const cfg = cfgRef.current;
-      const delta = e.deltaY;
-      if (Math.abs(delta) < 4) return;
-
-      const cur = targetRef.current;
-      const maxIndex = cfg.count - 1;
-      const now = performance.now();
-
-      // SCROLL DOWN RELEASE: At last item (e.g. Tom Holland, index 3)
-      if (!cfg.loop && delta > 0 && cur >= maxIndex - 0.05) {
-        if (now - lastScrollReleaseRef.current > 350) {
-          lastScrollReleaseRef.current = now;
-          const page3 = document.getElementById('multiverse-gallery');
-          if (page3) {
-            page3.scrollIntoView({ behavior: 'smooth' });
-          }
-        }
-        return; // Don't prevent default, allow snap container to scroll
-      }
-
-      // SCROLL UP RELEASE: At first item (e.g. Miles Morales, index 0)
-      if (!cfg.loop && delta < 0 && cur <= 0.05) {
-        if (now - lastScrollReleaseRef.current > 350) {
-          lastScrollReleaseRef.current = now;
-          const page1 = document.getElementById('hero-dimension');
-          if (page1) {
-            page1.scrollIntoView({ behavior: 'smooth' });
-          }
-        }
-        return; // Don't prevent default, allow snap container to scroll
-      }
-
-      // Active wheel range: intercept to step options
-      e.preventDefault();
-
-      // Throttled single-step per scroll gesture to prevent erratic rapid spinning
-      if (now - lastWheelStepRef.current > 120) {
-        lastWheelStepRef.current = now;
-        const dir = delta > 0 ? 1 : -1;
-        const nextTarget = Math.min(Math.max(Math.round(cur) + dir, 0), maxIndex);
-        applyTarget(nextTarget, true);
-      }
-    };
-
-    el.addEventListener('wheel', onWheel, { passive: false });
+    el.addEventListener('wheel', processWheel, { passive: false });
     return () => {
-      el.removeEventListener('wheel', onWheel);
+      el.removeEventListener('wheel', processWheel);
       if (wheelTimerRef.current) clearTimeout(wheelTimerRef.current);
     };
-  }, [applyTarget]);
+  }, [processWheel]);
 
   const handlePointerDown = useCallback(e => {
     if (!cfgRef.current.draggable) return;
@@ -299,8 +304,9 @@ const OptionWheel = ({
     selectIndex: (index) => {
       applyTarget(index, true);
     },
-    getSelectedIndex: () => selectedRef.current
-  }), [applyTarget]);
+    getSelectedIndex: () => selectedRef.current,
+    processWheel: (e) => processWheel(e)
+  }), [applyTarget, processWheel]);
 
   useEffect(() => {
     applyTarget(targetRef.current, false);
