@@ -10,19 +10,19 @@ const WHEEL_ITEMS = [
 ];
 
 /**
- * Spider-Verse Dimension Selection Section:
- * Features:
- * - Two-column design:
- *   - Left: Glassmorphic Spider-Man profile card with live stats
- *   - Right: Sleek half-circle OptionWheel docked strictly to the far-right viewport edge
- * - Non-trapping scroll behavior: Wheel steps options smoothly, and once at the boundary,
- *   page scroll seamlessly continues down to the FlexCarousel Character Gallery
+ * Page 2: Character Selection (Card + OptionWheel)
+ * Strict 100vh Full-screen Snap Section:
+ * - Full-Screen Scroll Area: OptionWheel wrapped in `absolute inset-0 w-full h-full z-20`
+ *   allowing mouse-wheel scroll anywhere on Page 2 to step through Spider-Man options.
+ * - Positioning: Glassmorphic card safely positioned on the left (z-30).
+ *   OptionWheel items arced to the far right (side="right", inset=50) over a half-circle backdrop.
+ * - Smoothing: smoothing={400} makes the wheel feel solid and weighted.
+ * - Scroll Release: Reaching the end (Tom Holland) releases downward to Page 3;
+ *   reaching the start (Miles Morales) releases upward to Page 1.
  */
 function SpiderSection() {
-  // Default to Tobey Maguire (Earth-96283, index 1)
   const [selectedSpiderIndex, setSelectedSpiderIndex] = useState(1);
   const [isMobile, setIsMobile] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef(null);
   const wheelRef = useRef(null);
 
@@ -35,30 +35,10 @@ function SpiderSection() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Smooth fade-in as section scrolls into view
-  useEffect(() => {
-    const el = sectionRef.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-        }
-      },
-      { threshold: 0.15 }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  // Sync OptionWheel selection to card state
   const handleWheelChange = useCallback((index) => {
     setSelectedSpiderIndex(index);
   }, []);
 
-  // Sync Card dot selection back to OptionWheel
   const handleCardSelect = useCallback((index) => {
     setSelectedSpiderIndex(index);
     wheelRef.current?.selectIndex(index);
@@ -70,49 +50,30 @@ function SpiderSection() {
     <section
       ref={sectionRef}
       id="spider-selection"
-      className="relative z-10 w-full min-h-screen py-20 bg-black text-white flex flex-col justify-center overflow-hidden select-none"
+      className="h-screen w-full snap-start relative overflow-hidden flex flex-col justify-between bg-black text-white px-6 sm:px-10 lg:px-16 pt-20 sm:pt-22 pb-5 select-none"
     >
-      {/* 
-        Subtle Background Dark Grid Layer:
-        Matching HeroSection and Layout for a seamless, continuous canvas feel.
-      */}
+      {/* Ambient background glow keyed to current theme */}
       <div
-        className="absolute inset-0 z-0 opacity-20 pointer-events-none"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, #333 1px, transparent 1px),
-            linear-gradient(to bottom, #333 1px, transparent 1px)
-          `,
-          backgroundSize: '40px 40px'
-        }}
-      />
-
-      {/* Ambient background glow reflecting the active Spider theme */}
-      <div
-        className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[500px] h-[500px] rounded-full opacity-15 blur-[120px] pointer-events-none transition-all duration-700"
+        className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[460px] h-[460px] rounded-full opacity-15 blur-[120px] pointer-events-none transition-all duration-700 z-0"
         style={{ backgroundColor: activeSpider.themeColor }}
       />
 
-      {/* Top Header - Centered Max-W-7xl Container */}
-      <div className="relative z-10 max-w-7xl mx-auto w-full px-6 sm:px-10 lg:px-16 mb-8 sm:mb-12">
-        <div
-          className={`flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/10 pb-6 transition-all duration-700 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-          }`}
-        >
+      {/* Top Header - Compact, fits safely in 100vh */}
+      <div className="relative z-30 max-w-7xl mx-auto w-full flex-shrink-0 border-b border-white/10 pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
           <div>
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-1">
               <span
                 className="w-2 h-2 rounded-full animate-ping"
                 style={{ backgroundColor: activeSpider.themeColor }}
               />
-              <span className="text-xs font-mono font-semibold tracking-widest uppercase text-red-500">
+              <span className="text-[11px] font-mono font-semibold tracking-widest uppercase text-red-500">
                 DIMENSIONAL FREQUENCY // SECTOR-EARTH
               </span>
             </div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white uppercase flex items-center gap-3">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-white uppercase flex items-center gap-3">
               Multiverse Variant
-              <span className="text-xs font-mono font-normal px-2.5 py-1 rounded bg-white/10 text-neutral-300 border border-white/15">
+              <span className="text-[11px] font-mono font-normal px-2 py-0.5 rounded bg-white/10 text-neutral-300 border border-white/15">
                 {activeSpider.dimension}
               </span>
             </h2>
@@ -131,78 +92,78 @@ function SpiderSection() {
       </div>
 
       {/* 
-        Main Interactive Section:
-        - Left: Glassmorphic SpiderCard (in standard max-w-7xl column)
-        - Right: Compact OptionWheel (~300px) docked strictly to the far-right viewport edge
+        Center Content Area:
+        - Left: Glassmorphic SpiderCard at z-30 with pointer-events-auto for interactive dot switching
+        - Right: Half-circle dial backdrop docked to the far-right edge
       */}
-      <div className="relative z-10 w-full flex-1 flex flex-col lg:flex-row items-center justify-between">
+      <div className="relative z-30 max-w-7xl mx-auto w-full flex-1 min-h-0 flex items-center justify-between">
         
-        {/* Left Column: Glassmorphism Info Card */}
-        <div
-          className={`w-full lg:w-auto max-w-7xl mx-auto lg:mx-0 px-6 sm:px-10 lg:pl-16 lg:pr-8 flex justify-center lg:justify-start transition-all duration-700 delay-100 ${
-            isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'
-          }`}
-        >
+        {/* Left Side: Glassmorphism Info Card */}
+        <div className="w-full lg:w-auto flex justify-center lg:justify-start">
           <SpiderCard
             activeIndex={selectedSpiderIndex}
             onSelectSpider={handleCardSelect}
           />
         </div>
 
-        {/* 
-          Right Column: Compact OptionWheel (w: ~300px, docked strictly to far-right edge)
-          Shaped like a half-circle attached to the right viewport border.
-        */}
-        <div
-          className={`w-full lg:w-auto mt-8 lg:mt-0 flex justify-end lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2 transition-all duration-700 delay-200 z-20 ${
-            isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12'
-          }`}
-        >
-          <div className="flex flex-col items-end">
-            
-            {/* Half-circle container attached flush to the right edge */}
-            <div className="w-[280px] sm:w-[310px] md:w-[330px] h-[440px] md:h-[500px] relative rounded-l-[180px] md:rounded-l-[250px] border-y border-l border-white/20 bg-gradient-to-l from-red-950/20 via-neutral-950/90 to-black/95 backdrop-blur-xl shadow-[-20px_0_50px_rgba(0,0,0,0.9)] overflow-hidden">
-              
-              {/* Active Center Target Indicator Line */}
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-full h-14 pointer-events-none border-y border-red-500/30 bg-gradient-to-l from-red-600/15 via-red-500/5 to-transparent flex items-center justify-end pr-3">
-                <span className="text-[10px] font-mono tracking-widest text-red-400 font-bold uppercase">
-                  ACTIVE ◀
-                </span>
-              </div>
-
-              {/* React Bits OptionWheel configured to curve around right edge */}
-              <OptionWheel
-                ref={wheelRef}
-                items={WHEEL_ITEMS}
-                defaultSelected={1}
-                side="right"
-                activeColor="#e23636"
-                textColor="#444444"
-                curve={1.5}
-                tilt={8}
-                fontSize={isMobile ? 1.4 : 1.75}
-                spacing={1.35}
-                blur={1.5}
-                fade={0.3}
-                minOpacity={0.08}
-                smoothing={180}
-                inset={isMobile ? 16 : 28}
-                draggable={true}
-                loop={false}
-                onChange={handleWheelChange}
-                className="w-full h-full"
-              />
-            </div>
-
-            {/* Instruction Cue */}
-            <div className="w-full flex items-center justify-end gap-1.5 pt-2.5 pr-4 font-mono text-[10px] text-neutral-500 tracking-wider uppercase">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-              <span>Scroll wheel or drag</span>
-            </div>
-
+        {/* Right Side Visual Half-Circle Backdrop (pointer-events-none so wheel captures all events) */}
+        <div className="hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 w-[280px] sm:w-[320px] h-[380px] sm:h-[440px] rounded-l-[220px] border-y border-l border-white/15 bg-gradient-to-l from-red-950/25 via-neutral-950/80 to-black/95 backdrop-blur-xl shadow-[-20px_0_40px_rgba(0,0,0,0.8)] pointer-events-none z-10">
+          {/* Active target marker */}
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-full h-12 border-y border-red-500/30 bg-gradient-to-l from-red-600/15 via-red-500/5 to-transparent flex items-center justify-end pr-3">
+            <span className="text-[10px] font-mono tracking-widest text-red-400 font-bold uppercase">
+              ACTIVE ◀
+            </span>
           </div>
         </div>
 
+      </div>
+
+      {/* 
+        FULL-SCREEN OPTIONWHEEL SCROLL AREA:
+        Spans absolute inset-0 w-full h-full at z-20.
+        Scrolling anywhere on Page 2 intercepts and rotates the wheel!
+        Items are visually pinned to the far right via side="right".
+      */}
+      <div className="absolute inset-0 w-full h-full z-20 overflow-hidden">
+        <OptionWheel
+          ref={wheelRef}
+          items={WHEEL_ITEMS}
+          defaultSelected={1}
+          side="right"
+          activeColor="#e23636"
+          textColor="#444444"
+          curve={1.5}
+          tilt={8}
+          fontSize={isMobile ? 1.35 : 1.75}
+          spacing={1.35}
+          blur={1.5}
+          fade={0.3}
+          minOpacity={0.08}
+          smoothing={400}
+          inset={isMobile ? 20 : 50}
+          draggable={true}
+          loop={false}
+          onChange={handleWheelChange}
+          className="w-full h-full"
+        />
+      </div>
+
+      {/* Bottom Status / Navigation Cue */}
+      <div className="relative z-30 max-w-7xl mx-auto w-full flex-shrink-0 pt-2 flex items-center justify-between font-mono text-[10px] sm:text-[11px] text-neutral-500 border-t border-white/10">
+        <div className="flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+          <span>SCROLL ANYWHERE TO SHIFT DIMENSION</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="hidden sm:inline">SCROLL PAST TOM TO GO TO GALLERY ↓</span>
+          <button
+            type="button"
+            onClick={() => document.getElementById('multiverse-gallery')?.scrollIntoView({ behavior: 'smooth' })}
+            className="text-neutral-400 hover:text-red-400 transition-colors uppercase font-bold cursor-pointer"
+          >
+            Gallery ↓
+          </button>
+        </div>
       </div>
     </section>
   );

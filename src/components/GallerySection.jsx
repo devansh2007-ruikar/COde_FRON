@@ -1,53 +1,34 @@
 import React, { memo, useRef, useEffect, useCallback } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import FlexCarousel from './FlexCarousel';
 import { SPIDER_GALLERY_ITEMS } from '../data/galleryData';
 
-gsap.registerPlugin(ScrollTrigger);
-
 /**
- * Spider-Verse Character Gallery Section:
- * - Powered by React Bits FlexCarousel WebGL component with 'vortex' refraction lens
- * - 10 local character images loaded from `/gallery-images/{1..10}.jpg`
- * - Autoplay enabled: cards smoothly cycle automatically without user interaction
- * - Centered, straight layout with generous top margins to prevent any clipping from fixed navigation
+ * Page 3: Character Gallery (FlexCarousel)
+ * Strict 100vh Full-screen Snap Section:
+ * - Proper top padding (pt-16 sm:pt-20) safely below fixed header so title is never cut off.
+ * - The FlexCarousel takes up the remaining height of the page (flex-1 min-h-0) without overflowing.
+ * - Local images (10 characters) with autoplay={true} enabled.
  */
 function GallerySection({ items = SPIDER_GALLERY_ITEMS }) {
   const sectionRef = useRef(null);
   const carouselRef = useRef(null);
 
-  // GSAP ScrollTrigger to trigger the bloom intro animation when scrolled into view
+  // Trigger bloom intro when this 100vh snap page comes into view
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
 
-    const ctx = gsap.context(() => {
-      ScrollTrigger.create({
-        trigger: section,
-        start: 'top 80%',
-        once: true,
-        onEnter: () => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
           carouselRef.current?.startIntro();
         }
-      });
+      },
+      { threshold: 0.3 }
+    );
 
-      // Gentle velocity nudge when scrolling through page
-      ScrollTrigger.create({
-        trigger: section,
-        start: 'top bottom',
-        end: 'bottom top',
-        scrub: 1.2,
-        onUpdate: (self) => {
-          const velocity = self.getVelocity();
-          if (Math.abs(velocity) > 80) {
-            carouselRef.current?.scrollByDelta(velocity * 0.05);
-          }
-        }
-      });
-    }, section);
-
-    return () => ctx.revert();
+    observer.observe(section);
+    return () => observer.disconnect();
   }, []);
 
   const handlePrev = useCallback(() => {
@@ -62,46 +43,34 @@ function GallerySection({ items = SPIDER_GALLERY_ITEMS }) {
     <section
       ref={sectionRef}
       id="multiverse-gallery"
-      className="relative z-0 w-full min-h-screen pt-28 md:pt-36 pb-20 px-4 sm:px-6 lg:px-8 bg-black text-white flex flex-col justify-between overflow-hidden select-none scroll-mt-24"
+      className="h-screen w-full snap-start relative overflow-hidden flex flex-col justify-between bg-black text-white px-4 sm:px-8 pt-16 sm:pt-20 pb-4 select-none"
     >
-      {/* Subtle graph-paper grid overlay matching layout aesthetics */}
-      <div
-        className="absolute inset-0 z-0 opacity-15 pointer-events-none"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, #444 1px, transparent 1px),
-            linear-gradient(to bottom, #444 1px, transparent 1px)
-          `,
-          backgroundSize: '40px 40px'
-        }}
-      />
-
-      {/* Top Header & Multiverse Info (Generous top padding avoids navbar clipping) */}
-      <div className="relative z-10 max-w-7xl mx-auto w-full pt-4 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/10 mt-4 md:mt-8">
+      {/* Top Header & Multiverse Info (Safe below fixed navbar, never clipped) */}
+      <div className="relative z-10 max-w-7xl mx-auto w-full pt-1 pb-2 flex-shrink-0 border-b border-white/10 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
         <div>
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-1">
             <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-            <span className="text-xs font-mono font-semibold tracking-widest uppercase text-cyan-400">
+            <span className="text-[10px] sm:text-xs font-mono font-semibold tracking-widest uppercase text-cyan-400">
               MULTIVERSE ARCHIVE // SECTOR-VORTEX
             </span>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white uppercase flex items-center gap-3">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-white uppercase flex items-center gap-2 sm:gap-3">
             Character Gallery
-            <span className="text-xs font-mono font-normal px-2.5 py-1 rounded bg-red-600/20 text-red-400 border border-red-500/30">
+            <span className="text-[10px] sm:text-xs font-mono font-normal px-2 py-0.5 rounded bg-red-600/20 text-red-400 border border-red-500/30">
               {items.length} DIMENSIONS
             </span>
           </h2>
         </div>
 
-        {/* Navigation & Controls */}
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-4 font-mono text-xs text-neutral-400 mr-2">
+        {/* Controls */}
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-3 font-mono text-[11px] text-neutral-400 mr-1">
             <span>
               LENS: <strong className="text-white">VORTEX</strong>
             </span>
             <span>&bull;</span>
             <span>
-              AUTOPLAY: <strong className="text-emerald-400">ACTIVE</strong>
+              AUTOPLAY: <strong className="text-emerald-400">ON</strong>
             </span>
           </div>
 
@@ -109,7 +78,7 @@ function GallerySection({ items = SPIDER_GALLERY_ITEMS }) {
             <button
               type="button"
               onClick={handlePrev}
-              className="p-2.5 rounded-lg bg-neutral-900 border border-white/15 text-white hover:bg-neutral-800 hover:border-white/30 transition-all cursor-pointer active:scale-95"
+              className="p-2 rounded-lg bg-neutral-900 border border-white/15 text-white hover:bg-neutral-800 hover:border-white/30 transition-all cursor-pointer active:scale-95"
               aria-label="Previous card"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -119,7 +88,7 @@ function GallerySection({ items = SPIDER_GALLERY_ITEMS }) {
             <button
               type="button"
               onClick={handleNext}
-              className="p-2.5 rounded-lg bg-neutral-900 border border-white/15 text-white hover:bg-neutral-800 hover:border-white/30 transition-all cursor-pointer active:scale-95"
+              className="p-2 rounded-lg bg-neutral-900 border border-white/15 text-white hover:bg-neutral-800 hover:border-white/30 transition-all cursor-pointer active:scale-95"
               aria-label="Next card"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -132,18 +101,17 @@ function GallerySection({ items = SPIDER_GALLERY_ITEMS }) {
 
       {/* 
         FlexCarousel Canvas Wrapper:
-        - Perfectly straight and centered inside max-w-7xl
-        - items: 10 local images from public/gallery-images/{1..10}.jpg
-        - autoplay={true}: auto-scrolls continuously
-        - preset="vortex", intro="bloom", cardHeight={0.6}
+        - Takes up remaining height of 100vh page via flex-1 min-h-0
+        - Perfectly straight & centered inside max-w-7xl
+        - autoplay={true} with local images
       */}
-      <div className="relative z-10 max-w-7xl mx-auto w-full h-[580px] md:h-[640px] my-8 overflow-hidden rounded-2xl bg-black border border-white/10 shadow-2xl shadow-black">
+      <div className="relative z-10 max-w-7xl mx-auto w-full flex-1 min-h-0 my-3 overflow-hidden rounded-2xl bg-black border border-white/10 shadow-2xl shadow-black">
         <FlexCarousel
           items={items}
           ref={carouselRef}
           preset="vortex"
           intro="bloom"
-          cardHeight={0.6}
+          cardHeight={0.65}
           focusOnClick={true}
           captions={true}
           captureWheel={true}
@@ -155,8 +123,8 @@ function GallerySection({ items = SPIDER_GALLERY_ITEMS }) {
       </div>
 
       {/* Bottom Status & Info Bar */}
-      <div className="relative z-10 max-w-7xl mx-auto w-full pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-neutral-400 font-mono text-xs border-t border-white/10">
-        <div className="flex flex-wrap items-center gap-3">
+      <div className="relative z-10 max-w-7xl mx-auto w-full pt-2 pb-1 flex-shrink-0 flex flex-col sm:flex-row items-center justify-between gap-2 text-neutral-400 font-mono text-[11px] border-t border-white/10">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold">
             AUTOPLAY ON
           </span>
@@ -166,9 +134,14 @@ function GallerySection({ items = SPIDER_GALLERY_ITEMS }) {
           <span>Click card to zoom</span>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span>LOCAL REPOSITORY:</span>
-          <span className="text-white font-mono font-semibold">/gallery-images/</span>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => document.getElementById('hero-dimension')?.scrollIntoView({ behavior: 'smooth' })}
+            className="text-neutral-400 hover:text-white transition-colors cursor-pointer uppercase"
+          >
+            ↑ Back to Top
+          </button>
         </div>
       </div>
     </section>

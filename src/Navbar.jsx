@@ -22,7 +22,12 @@ export default function Navbar() {
       href: '#',
       onClick: (e) => {
         e?.preventDefault();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const container = document.getElementById('snap-container');
+        if (container) {
+          container.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          document.getElementById('hero-dimension')?.scrollIntoView({ behavior: 'smooth' });
+        }
       }
     },
     {
@@ -50,7 +55,7 @@ export default function Navbar() {
   ];
 
   return (
-    <header className="fixed top-0 left-0 w-full flex justify-center pt-8 z-50 pointer-events-none">
+    <header className="fixed top-0 left-0 w-full flex justify-center pt-6 z-50 pointer-events-none">
       <div className="pointer-events-auto">
         <GooeyNav
           items={navItems}

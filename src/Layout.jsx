@@ -1,10 +1,16 @@
 import React from 'react';
-import Navbar from './Navbar'; // Adjust path as necessary based on structure
+import Navbar from './Navbar';
 
+/**
+ * Strict CSS Scroll Snap Layout:
+ * - Fixed background grid and floating navigation
+ * - Main container: `h-screen w-full overflow-y-scroll snap-y snap-mandatory`
+ * - Holds the 3 full-screen pages (100vh each) with seamless snapping
+ */
 export default function Layout({ children }) {
   return (
-    <div className="min-h-screen bg-black text-white relative overflow-x-clip">
-      {/* Subtle graph-paper grid background */}
+    <div className="h-screen w-full bg-black text-white relative overflow-hidden select-none">
+      {/* Subtle graph-paper grid background fixed across the entire application */}
       <div 
         className="fixed inset-0 z-0 opacity-20 pointer-events-none"
         style={{
@@ -16,11 +22,14 @@ export default function Layout({ children }) {
         }}
       />
       
-      {/* Floating Header Navigation */}
+      {/* Floating Header Navigation (Fixed top z-50) */}
       <Navbar />
 
-      {/* Main Page Content */}
-      <main className="relative z-10 min-h-screen">
+      {/* The Strict Snap Container */}
+      <main
+        id="snap-container"
+        className="h-screen w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth relative z-10"
+      >
         {children}
       </main>
     </div>

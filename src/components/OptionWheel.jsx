@@ -22,8 +22,8 @@ const OptionWheel = ({
   items = DEFAULT_ITEMS,
   defaultSelected = 1,
   onChange,
-  textColor = '#a6a6a6',
-  activeColor = '#ffffff',
+  textColor = '#444444',
+  activeColor = '#e23636',
   side = 'right',
   fontSize = 2,
   spacing = 1.4,
@@ -32,8 +32,8 @@ const OptionWheel = ({
   blur = 2,
   fade = 0.25,
   minOpacity = 0.05,
-  smoothing = 200,
-  inset = 30,
+  smoothing = 400,
+  inset = 50,
   loop = false,
   draggable = true,
   soundUrl = '',
@@ -51,6 +51,8 @@ const OptionWheel = ({
   const onChangeRef = useRef(onChange);
   const selectedRef = useRef(defaultSelected);
   const wheelTimerRef = useRef(null);
+  const lastWheelStepRef = useRef(0);
+  const lastScrollReleaseRef = useRef(0);
   const dragRef = useRef(null);
   const dragMovedRef = useRef(false);
   const audioRef = useRef(null);
@@ -79,9 +81,7 @@ const OptionWheel = ({
     soundVolume
   };
 
-  // Single rAF loop that eases the wheel position toward its target with
-  // frame-rate independent exponential smoothing, then lays every option out
-  // along the curve based on its distance from the current position.
+  // Frame-rate independent exponential smoothing
   const runFrame = useCallback(now => {
     const dt = Math.min((now - lastRef.current) / 1000, 0.05);
     lastRef.current = now;
@@ -99,8 +99,6 @@ const OptionWheel = ({
     const els = itemRefs.current;
     const n = cfg.count;
     const mirror = cfg.side === 'right' ? -1 : 1;
-    // Options sit on a circle whose radius keeps the arc length between two
-    // neighbors equal to one row height, so tilt controls how tightly it curls.
     const tiltRad = (cfg.tilt * Math.PI) / 180;
     const R = tiltRad > 0.0005 ? cfg.rowH / tiltRad : 0;
     for (let i = 0; i < n; i++) {
@@ -140,8 +138,6 @@ const OptionWheel = ({
     rafRef.current = requestAnimationFrame(t => runFrameRef.current?.(t));
   }, []);
 
-  // Optional tick on selection change, throttled so fast scrolling can't spam
-  // it, and with playback failures (e.g. autoplay policies) silently ignored.
   const playTick = useCallback(() => {
     const { soundUrl, soundVolume } = cfgRef.current;
     if (!soundUrl) return;
@@ -178,34 +174,61 @@ const OptionWheel = ({
     [startLoop, playTick]
   );
 
-  // Wheel / touchpad scrolling with NO scroll trapping:
-  // Allows native page scroll when at the edges of the wheel (top or bottom)!
+  /**
+   * Scroll Release Logic:
+   * - Stepping: Inside the wheel (options 0 to count-1), each wheel action steps by exactly 1 item smoothly.
+   * - Release at End: If scrolling down while on the last option, releases the scroll trap and
+   *   smoothly triggers scroll to Page 3 (#multiverse-gallery).
+   * - Release at Start: If scrolling up while on the first option, releases the scroll trap and
+   *   smoothly triggers scroll to Page 1 (#hero-dimension).
+   */
   useEffect(() => {
     const el = rootRef.current;
     if (!el) return;
 
     const onWheel = e => {
       const cfg = cfgRef.current;
-      const delta = e.deltaMode === 1 ? e.deltaY * 24 : e.deltaY;
+      const delta = e.deltaY;
+      if (Math.abs(delta) < 4) return;
+
       const cur = targetRef.current;
       const maxIndex = cfg.count - 1;
+      const now = performance.now();
 
-      // If at bottom edge and user scrolls down, allow page to scroll down!
+      // SCROLL DOWN RELEASE: At last item (e.g. Tom Holland, index 3)
       if (!cfg.loop && delta > 0 && cur >= maxIndex - 0.05) {
-        return;
-      }
-      // If at top edge and user scrolls up, allow page to scroll up!
-      if (!cfg.loop && delta < 0 && cur <= 0.05) {
-        return;
+        if (now - lastScrollReleaseRef.current > 350) {
+          lastScrollReleaseRef.current = now;
+          const page3 = document.getElementById('multiverse-gallery');
+          if (page3) {
+            page3.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+        return; // Don't prevent default, allow snap container to scroll
       }
 
-      // Inside active wheel boundaries: step options
+      // SCROLL UP RELEASE: At first item (e.g. Miles Morales, index 0)
+      if (!cfg.loop && delta < 0 && cur <= 0.05) {
+        if (now - lastScrollReleaseRef.current > 350) {
+          lastScrollReleaseRef.current = now;
+          const page1 = document.getElementById('hero-dimension');
+          if (page1) {
+            page1.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+        return; // Don't prevent default, allow snap container to scroll
+      }
+
+      // Active wheel range: intercept to step options
       e.preventDefault();
-      const step = Math.max(-1, Math.min(1, delta / cfg.rowH));
-      const nextTarget = Math.min(Math.max(cur + step, 0), maxIndex);
-      applyTarget(nextTarget, false);
-      if (wheelTimerRef.current) clearTimeout(wheelTimerRef.current);
-      wheelTimerRef.current = setTimeout(() => applyTarget(targetRef.current, true), 140);
+
+      // Throttled single-step per scroll gesture to prevent erratic rapid spinning
+      if (now - lastWheelStepRef.current > 120) {
+        lastWheelStepRef.current = now;
+        const dir = delta > 0 ? 1 : -1;
+        const nextTarget = Math.min(Math.max(Math.round(cur) + dir, 0), maxIndex);
+        applyTarget(nextTarget, true);
+      }
     };
 
     el.addEventListener('wheel', onWheel, { passive: false });
@@ -227,11 +250,13 @@ const OptionWheel = ({
       const drag = dragRef.current;
       if (!drag) return;
       const dy = e.clientY - drag.y;
-      if (!dragMovedRef.current && Math.abs(dy) > 4) {
+      if (!dragMovedRef.current && Math.abs(dy) > 6) {
         dragMovedRef.current = true;
         rootRef.current?.setPointerCapture(drag.id);
       }
-      if (dragMovedRef.current) applyTarget(drag.start - dy / cfgRef.current.rowH, false);
+      if (dragMovedRef.current) {
+        applyTarget(drag.start - dy / (cfgRef.current.rowH * 1.5), false);
+      }
     },
     [applyTarget]
   );

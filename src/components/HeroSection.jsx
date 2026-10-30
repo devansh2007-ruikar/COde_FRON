@@ -3,10 +3,11 @@ import HalftoneReveal from './HalftoneReveal';
 import './HeroSection.css';
 
 /**
- * Spider-Verse Hero Section:
+ * Page 1: Hero Section
+ * Strict 100vh Full-screen Snap Section:
  * - Single interactive duotone HalftoneReveal canvas
- * - Fast, hardware-accelerated cursor with custom spinning SVG label
- * - Clean vertical flow into the 2D OptionWheel dimension selection section
+ * - Hardware-accelerated cursor with spinning SVG label
+ * - Fits cleanly within 100vh with h-screen w-full snap-start
  */
 function HeroSection({ onExploreClick }) {
   const heroWrapperRef = useRef(null);
@@ -18,7 +19,6 @@ function HeroSection({ onExploreClick }) {
   // Spider-Man high-resolution silhouette
   const src = 'https://images.unsplash.com/photo-1635805737707-575885ab0820?q=80&w=1600&auto=format&fit=crop';
 
-  // Smooth RAF cursor updates to avoid React re-renders
   const scheduleCursorUpdate = useCallback((x, y, visible) => {
     latestCursorRef.current = { x, y, visible };
 
@@ -43,7 +43,6 @@ function HeroSection({ onExploreClick }) {
     };
   }, []);
 
-  // Forward pointer events to the underlying HalftoneReveal canvas
   const handlePointer = useCallback((e) => {
     if (!heroWrapperRef.current) return;
     const rect = heroWrapperRef.current.getBoundingClientRect();
@@ -73,11 +72,6 @@ function HeroSection({ onExploreClick }) {
     const target = document.getElementById('spider-selection');
     if (target) {
       target.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      window.scrollTo({
-        top: window.innerHeight,
-        behavior: 'smooth'
-      });
     }
   }, [onExploreClick]);
 
@@ -85,16 +79,13 @@ function HeroSection({ onExploreClick }) {
     <section
       ref={heroWrapperRef}
       id="hero-dimension"
-      className="hero-glitch-container relative z-10 w-full min-h-screen overflow-hidden bg-black text-white select-none flex flex-col justify-between"
+      className="hero-glitch-container h-screen w-full snap-start relative overflow-hidden bg-black text-white select-none flex flex-col justify-between pt-20 pb-5"
       onPointerMove={handlePointer}
       onPointerDown={handlePointer}
       onPointerEnter={handlePointer}
       onPointerLeave={handlePointer}
     >
-      {/* 
-        Single HalftoneReveal Canvas:
-        Interactive WebGL2 duotone halftone with red ink, cyan accents, and black paper.
-      */}
+      {/* Interactive WebGL2 duotone Halftone Canvas */}
       <div
         ref={halftoneContainerRef}
         className="absolute inset-0 z-0 pointer-events-none"
@@ -118,13 +109,13 @@ function HeroSection({ onExploreClick }) {
         />
       </div>
 
-      {/* Subtle vignette darkening around screen perimeter for dramatic contrast */}
+      {/* Subtle vignette darkening around screen perimeter */}
       <div className="absolute inset-0 z-[1] pointer-events-none bg-gradient-to-t from-black via-transparent to-black/60" />
       <div className="absolute inset-0 z-[1] pointer-events-none bg-gradient-to-r from-black/80 via-transparent to-black/50" />
 
-      {/* Hero Typography & Content */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-12 lg:px-16 pt-32 pb-16 flex-1 flex flex-col justify-center pointer-events-none">
-        <div className="max-w-2xl flex flex-col gap-5">
+      {/* Hero Typography & Content (Centered vertically in 100vh) */}
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-12 lg:px-16 flex-1 min-h-0 flex flex-col justify-center pointer-events-none">
+        <div className="max-w-2xl flex flex-col gap-4 sm:gap-5">
           
           {/* Dimension Tag */}
           <div className="flex items-center gap-3">
@@ -151,11 +142,11 @@ function HeroSection({ onExploreClick }) {
           </p>
 
           {/* Action buttons */}
-          <div className="pt-3 flex flex-wrap items-center gap-4 pointer-events-auto">
+          <div className="pt-2 flex flex-wrap items-center gap-4 pointer-events-auto">
             <button
               type="button"
               onClick={handleExplore}
-              className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 text-white font-mono text-xs uppercase tracking-widest font-bold border border-red-400/30 shadow-[0_0_24px_rgba(226,54,54,0.4)] hover:shadow-[0_0_36px_rgba(226,54,54,0.7)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 text-white font-mono text-xs uppercase tracking-widest font-bold border border-red-400/30 shadow-[0_0_24px_rgba(226,54,54,0.4)] hover:shadow-[0_0_36px_rgba(226,54,54,0.7)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
             >
               Select Dimension ↓
             </button>
@@ -167,14 +158,14 @@ function HeroSection({ onExploreClick }) {
       </div>
 
       {/* Bottom Scroll Prompt */}
-      <div className="relative z-10 pb-8 flex justify-center pointer-events-auto">
+      <div className="relative z-10 flex-shrink-0 flex justify-center pointer-events-auto">
         <button
           type="button"
           onClick={handleExplore}
           className="flex flex-col items-center gap-2 cursor-pointer group"
           aria-label="Scroll down to dimension selector"
         >
-          <span className="text-[11px] font-mono tracking-widest uppercase text-neutral-400 group-hover:text-red-400 transition-colors bg-black/60 px-4 py-1.5 rounded-full border border-neutral-800 backdrop-blur-sm">
+          <span className="text-[11px] font-mono tracking-widest uppercase text-neutral-400 group-hover:text-red-400 transition-colors bg-black/60 px-4 py-1 rounded-full border border-neutral-800 backdrop-blur-sm">
             Scroll Down To Universe Wheel ↓
           </span>
         </button>
