@@ -133,9 +133,10 @@ export const SPIDER_MEN = [
 ];
 
 /**
- * Glassmorphic UI Card rendered on the side of the currently active sphere.
+ * Glassmorphic UI Card rendered strictly on the LEFT side of the active sphere/screen.
  * Uses exact Tailwind CSS requirements:
  * bg-white/10, backdrop-blur-lg, border border-white/20, rounded corners, subtle shadow.
+ * The RIGHT side of the screen remains completely empty as requested.
  */
 export default function SpiderCard({ activeIndex = 0, onSelectSpider }) {
   const current = SPIDER_MEN[activeIndex] || SPIDER_MEN[0];
@@ -143,11 +144,11 @@ export default function SpiderCard({ activeIndex = 0, onSelectSpider }) {
   return (
     <aside 
       aria-label={`Profile: ${current.name}`}
-      className="pointer-events-none fixed inset-0 z-30 flex items-center justify-end px-6 md:px-12 lg:px-20"
+      className="pointer-events-none fixed inset-0 z-30 flex items-center justify-start px-6 md:px-12 lg:px-20"
     >
       {/* 
-        The card is placed strictly on the right side of the screen.
-        The opposite side (left side) is left completely empty for future additions as requested!
+        The card is placed strictly on the LEFT side of the screen.
+        The opposite side (RIGHT side) remains completely empty as requested!
       */}
       <div className="pointer-events-auto w-full max-w-md lg:max-w-[420px] transition-all duration-500 ease-out">
         <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-2xl shadow-black/70 relative overflow-hidden">

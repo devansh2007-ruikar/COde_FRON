@@ -9,8 +9,9 @@ import SpiderCard, { SPIDER_MEN } from './SpiderCard';
 gsap.registerPlugin(ScrollTrigger);
 
 /**
- * 3D Scroll-based section featuring the vertical rotating Ferris wheel of 4 Spider-Men spheres.
- * Smoothly rotates along the X-axis driven by GSAP ScrollTrigger and reactive useFrame.
+ * 3D Scroll-based section featuring the horizontal rotating carousel of 4 Spider-Men spheres.
+ * Rotates along the Y-axis from right to left driven by GSAP ScrollTrigger.
+ * Starts with Tobey Maguire at center and ends exactly at Miles Morales.
  */
 export default function SpiderSection() {
   const sectionRef = useRef(null);
@@ -22,8 +23,7 @@ export default function SpiderSection() {
   // Mutable state shared with R3F canvas useFrame loop for 120fps smooth interpolation
   const scrollStateRef = useRef({
     progress: 0,
-    targetY: -3.2,
-    targetRotationX: 0,
+    targetRotationY: 0,
     activeIndex: 0
   });
 
@@ -42,9 +42,8 @@ export default function SpiderSection() {
     const section = sectionRef.current;
     if (!section) return;
 
-    // Reset initial targets
-    scrollStateRef.current.targetY = -3.2;
-    scrollStateRef.current.targetRotationX = 0;
+    // Start state: Tobey Maguire is exactly in the front center (targetRotationY: 0)
+    scrollStateRef.current.targetRotationY = 0;
     scrollStateRef.current.progress = 0;
 
     const ctx = gsap.context(() => {
@@ -56,23 +55,24 @@ export default function SpiderSection() {
         onUpdate: (self) => {
           const p = self.progress;
 
-          // 1. Lift group from bottom (y: -3.2) into central focus (y: 0) over first 15% scroll
-          const lift = Math.min(1, p / 0.15);
-          const targetY = -3.2 * (1 - lift);
-
-          // 2. Rotate entire 3D group along the X-axis
-          // Progress 0 -> 1 rotates by -(3 * pi) / 2, smoothly bringing each sphere to front focus
-          const targetRotationX = -((3 * Math.PI) / 2) * p;
+          // Rotate group along the Y-axis:
+          // As p goes from 0 to 1, targetRotationY goes from 0 to -(3 * pi / 2)
+          // Spheres enter from the right side, move into center focus, and exit to the left.
+          // Ends exactly when Sphere 4 (Miles Morales) reaches front center at p = 1.0
+          const targetRotationY = -((3 * Math.PI) / 2) * p;
 
           scrollStateRef.current.progress = p;
-          scrollStateRef.current.targetY = targetY;
-          scrollStateRef.current.targetRotationX = targetRotationX;
+          scrollStateRef.current.targetRotationY = targetRotationY;
 
-          // 3. Update active sphere index
+          // Determine active sphere index:
+          // 0: Tobey (0.00 - 0.20)
+          // 1: Andrew (0.20 - 0.50)
+          // 2: Tom (0.50 - 0.80)
+          // 3: Miles (0.80 - 1.00)
           let idx = 0;
-          if (p < 0.26) idx = 0;
-          else if (p < 0.52) idx = 1;
-          else if (p < 0.78) idx = 2;
+          if (p < 0.20) idx = 0;
+          else if (p < 0.50) idx = 1;
+          else if (p < 0.80) idx = 2;
           else idx = 3;
 
           scrollStateRef.current.activeIndex = idx;
@@ -88,7 +88,8 @@ export default function SpiderSection() {
   // Smooth click-to-scroll when a dimension dot or sphere is clicked
   const handleSelectSpider = useCallback((index) => {
     if (!sectionRef.current) return;
-    const targets = [0.08, 0.38, 0.65, 0.92];
+    // Exactly 0.0 for Tobey, 1/3 for Andrew, 2/3 for Tom, 1.0 for Miles
+    const targets = [0.0, 0.333, 0.667, 1.0];
     const targetProgress = targets[index] ?? 0;
     const sectionTop = sectionRef.current.offsetTop;
     const maxScroll = sectionRef.current.offsetHeight - window.innerHeight;
@@ -100,7 +101,6 @@ export default function SpiderSection() {
   const dragRef = useRef({ isDragging: false, startY: 0, startScroll: 0 });
 
   const handlePointerDown = (e) => {
-    // Only drag if not clicking interactive UI buttons
     if (e.target.closest('button, a')) return;
     dragRef.current = {
       isDragging: true,
@@ -125,7 +125,7 @@ export default function SpiderSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative w-full h-[450vh] bg-black text-white"
+      className="relative w-full h-[400vh] bg-black text-white"
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -151,8 +151,8 @@ export default function SpiderSection() {
         <Canvas
           className="relative z-10 w-full h-full cursor-grab active:cursor-grabbing"
           camera={{
-            position: [0, 0, isMobile ? 9.5 : 7.6],
-            fov: isMobile ? 55 : 44
+            position: [0, 0.8, isMobile ? 9.5 : 7.6],
+            fov: isMobile ? 54 : 45
           }}
           gl={{
             antialias: true,
@@ -174,7 +174,7 @@ export default function SpiderSection() {
             castShadow
           />
           <directionalLight
-            position={[-5, -4, 4]}
+            position={[-5, 3, 4]}
             intensity={1.5}
             color="#e23636"
           />
@@ -184,7 +184,7 @@ export default function SpiderSection() {
             color="#38bdf8"
           />
 
-          {/* Vertical 3D Rotating Wheel */}
+          {/* Horizontal 3D Rotating Carousel (XZ plane) */}
           <SpiderWheel
             scrollStateRef={scrollStateRef}
             activeIndex={activeIndex}
@@ -196,8 +196,8 @@ export default function SpiderSection() {
 
         {/* 
           Glassmorphism UI Overlay:
-          Renders on the right side next to the active center sphere.
-          The opposite side (left side) is left completely empty for future additions.
+          Renders strictly on the LEFT side of the active sphere/screen.
+          The RIGHT side of the screen remains completely empty as requested.
         */}
         <SpiderCard
           activeIndex={activeIndex}
@@ -207,11 +207,11 @@ export default function SpiderSection() {
         {/* Initial Scroll Prompt at the bottom */}
         <div
           className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 pointer-events-none transition-opacity duration-500 ${
-            scrollProgress < 0.05 ? 'opacity-90' : 'opacity-0'
+            scrollProgress < 0.04 ? 'opacity-90' : 'opacity-0'
           }`}
         >
           <span className="text-[11px] font-mono tracking-widest uppercase text-neutral-400 bg-neutral-900/80 px-3.5 py-1.5 rounded-full border border-neutral-800 backdrop-blur-sm shadow-lg shadow-black/80">
-            Scroll or Drag to Rotate Spider-Men
+            Scroll To Rotate Carousel &bull; Right to Left
           </span>
           <svg
             className="w-5 h-5 text-red-500 animate-bounce"
@@ -223,12 +223,12 @@ export default function SpiderSection() {
           </svg>
         </div>
 
-        {/* Multiverse Progress HUD Indicator (Bottom Left) */}
-        <div className="fixed bottom-6 left-8 z-20 hidden md:flex items-center gap-3 pointer-events-none">
-          <div className="flex flex-col font-mono text-xs">
-            <span className="text-neutral-500">DIMENSIONAL DEPTH</span>
+        {/* Multiverse Progress HUD Indicator (Bottom Right) */}
+        <div className="fixed bottom-6 right-8 z-20 hidden md:flex items-center gap-3 pointer-events-none">
+          <div className="flex flex-col font-mono text-xs text-right">
+            <span className="text-neutral-500">CAROUSEL ORBIT</span>
             <span className="text-red-500 font-bold">
-              {Math.round(scrollProgress * 100)}% // X-AXIS ROTATION
+              {Math.round(scrollProgress * 100)}% // Y-AXIS ROTATION
             </span>
           </div>
           <div className="w-24 h-1.5 bg-neutral-800/80 rounded-full overflow-hidden border border-white/10">

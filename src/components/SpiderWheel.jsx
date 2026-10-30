@@ -4,8 +4,9 @@ import * as THREE from 'three';
 import SpiderSphere from './SpiderSphere';
 
 /**
- * Vertical 3D Rotating Wheel of 4 Spider-Men spheres in 90-degree depth.
- * Smoothly rotates along the X-axis driven by GSAP ScrollTrigger via scrollStateRef.
+ * Horizontal 3D Rotating Carousel of 4 Spider-Men spheres on the XZ plane.
+ * Rotates along the Y-axis driven by GSAP ScrollTrigger via scrollStateRef.
+ * Spheres enter from the right, move into the center focus, and exit to the left.
  */
 export default function SpiderWheel({
   scrollStateRef,
@@ -26,82 +27,77 @@ export default function SpiderWheel({
     { id: 'miles', name: 'Miles Morales', suit: 'Graffiti Spray Suit' }
   ];
 
-  // Sphere positions spaced at 90 degrees in the Y-Z plane
-  // Sphere 0: [0, 0, +R] (front center focus)
-  // Sphere 1: [0, -R, 0] (bottom, rolls up into center)
-  // Sphere 2: [0, 0, -R] (back depth)
-  // Sphere 3: [0, +R, 0] (top)
+  // Sphere positions spaced at 90 degrees in the horizontal XZ plane (carousel formation)
+  // Sphere 0 (Tobey): [0, 0, radius] -> Exact front center on load
+  // Sphere 1 (Andrew): [radius, 0, 0] -> Enters from the right into center
+  // Sphere 2 (Tom): [0, 0, -radius] -> Enters from the right after Andrew
+  // Sphere 3 (Miles): [-radius, 0, 0] -> Enters from the right and ends at front center
   const spherePositions = useMemo(() => {
     return [
       [0, 0, radius],          // 0: Tobey (Front center)
-      [0, -radius, 0],         // 1: Andrew (Bottom)
+      [radius, 0, 0],          // 1: Andrew (Right)
       [0, 0, -radius],         // 2: Tom (Back)
-      [0, radius, 0]           // 3: Miles (Top)
+      [-radius, 0, 0]          // 3: Miles (Left)
     ];
   }, [radius]);
 
-  // Multiverse anomaly sparks
+  // Floating multiverse sparks/particles
   const particlePositions = useMemo(() => {
-    const count = 140;
+    const count = 150;
     const positions = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 12;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 12;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
+      positions[i * 3] = (Math.random() - 0.5) * 14;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 8;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 12;
     }
     return positions;
   }, []);
 
-  // Frame loop for 60/120fps dampening and smooth X-axis rotation
+  // Frame loop for 60/120fps dampening and smooth Y-axis rotation
   useFrame((state, delta) => {
     if (wheelGroupRef.current && scrollStateRef?.current) {
-      const { targetY = 0, targetRotationX = 0, progress = 0 } = scrollStateRef.current;
+      const { targetRotationY = 0 } = scrollStateRef.current;
 
-      // 1. Smoothly interpolate vertical position (lifts from bottom)
-      wheelGroupRef.current.position.y = THREE.MathUtils.damp(
-        wheelGroupRef.current.position.y,
-        targetY,
-        8,
-        delta
-      );
-
-      // 2. Smoothly interpolate rotation along X-axis (Ferris wheel rotation)
-      wheelGroupRef.current.rotation.x = THREE.MathUtils.damp(
-        wheelGroupRef.current.rotation.x,
-        targetRotationX,
-        8,
-        delta
-      );
-
-      // 3. Subtle dynamic 3D depth tilt on Y axis for realistic perspective
-      const depthTilt = Math.sin(progress * Math.PI) * 0.22;
+      // Smoothly interpolate rotation along Y-axis (carousel rotation)
       wheelGroupRef.current.rotation.y = THREE.MathUtils.damp(
         wheelGroupRef.current.rotation.y,
-        depthTilt,
+        targetRotationY,
+        8,
+        delta
+      );
+
+      // Subtle dynamic X tilt (10 degrees) to give deep perspective to the horizontal carousel
+      const targetTiltX = 0.18;
+      wheelGroupRef.current.rotation.x = THREE.MathUtils.damp(
+        wheelGroupRef.current.rotation.x,
+        targetTiltX,
         6,
         delta
       );
     }
 
-    // Float particles
+    // Slowly rotate background multiverse anomaly dust
     if (particlesRef.current) {
-      particlesRef.current.rotation.y += delta * 0.04;
-      particlesRef.current.rotation.x += delta * 0.02;
+      particlesRef.current.rotation.y += delta * 0.03;
+      particlesRef.current.rotation.x += delta * 0.01;
     }
 
-    // Pulse orbital ring
+    // Subtle breathing pulse on the horizontal orbital web ring
     if (ringRef.current) {
-      ringRef.current.rotation.x += delta * 0.1;
+      const pulse = 1 + Math.sin(state.clock.elapsedTime * 2) * 0.015;
+      ringRef.current.scale.set(pulse, pulse, pulse);
     }
   });
 
   return (
-    <group position={[isMobile ? 0 : -0.7, 0, 0]}>
+    // On desktop, position the carousel slightly to the right (+0.75)
+    // because the UI card is now on the left side!
+    <group position={[isMobile ? 0 : 0.75, -0.15, 0]}>
       {/* 
-        The main rotating 3D Ferris wheel group:
-        Initialized at y = -3.2 so only bottom half is visible before scroll!
+        The main rotating 3D carousel group:
+        Rotates on the Y-axis from 0 to -(3 * pi / 2)
       */}
-      <group ref={wheelGroupRef} position={[0, -3.2, 0]}>
+      <group ref={wheelGroupRef} rotation={[0.18, 0, 0]}>
         {/* The 4 Spider-Men Spheres */}
         {spiderData.map((spider, index) => (
           <SpiderSphere
@@ -114,9 +110,9 @@ export default function SpiderWheel({
           />
         ))}
 
-        {/* Vertical Orbital Web Tether Ring (in Y-Z plane) */}
-        <mesh ref={ringRef} rotation={[0, Math.PI / 2, 0]}>
-          <torusGeometry args={[radius, 0.025, 16, 120]} />
+        {/* Horizontal Orbital Web Tether Ring (in the XZ plane) */}
+        <mesh ref={ringRef} rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[radius, 0.024, 16, 120]} />
           <meshStandardMaterial
             color="#e23636"
             emissive="#e23636"
