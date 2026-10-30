@@ -20,7 +20,7 @@ export default function Layout({ children }) {
       <Navbar />
 
       {/* Main Page Content */}
-      <main className="relative z-10 pt-32 min-h-screen">
+      <main className="relative z-10 min-h-screen">
         {children}
       </main>
     </div>

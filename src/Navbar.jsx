@@ -17,9 +17,36 @@ const SpiderIcon = () => (
 
 export default function Navbar() {
   const navItems = [
-    { label: 'Home', href: '#' },
-    { icon: <SpiderIcon />, href: '#' }, 
-    { label: 'Gallery', href: '#' }
+    {
+      label: 'Home',
+      href: '#',
+      onClick: (e) => {
+        e?.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    },
+    {
+      icon: <SpiderIcon />,
+      href: '#spider-selection',
+      onClick: (e) => {
+        e?.preventDefault();
+        const el = document.getElementById('spider-selection');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    }, 
+    {
+      label: 'Gallery',
+      href: '#multiverse-gallery',
+      onClick: (e) => {
+        e?.preventDefault();
+        const gallery = document.getElementById('multiverse-gallery');
+        if (gallery) {
+          gallery.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    }
   ];
 
   return (

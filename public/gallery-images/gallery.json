@@ -1,0 +1,72 @@
+[
+  {
+    "id": "1",
+    "src": "/gallery-images/1.jpg",
+    "title": "Tobey Maguire",
+    "subtitle": "Earth-96283 // Classic Timeline",
+    "alt": "Tobey Maguire classic Spider-Man"
+  },
+  {
+    "id": "2",
+    "src": "/gallery-images/2.jpg",
+    "title": "Andrew Garfield",
+    "subtitle": "Earth-120703 // The Amazing Era",
+    "alt": "Andrew Garfield The Amazing Spider-Man"
+  },
+  {
+    "id": "3",
+    "src": "/gallery-images/3.jpg",
+    "title": "Tom Holland",
+    "subtitle": "Earth-199999 // Iron Spider Nanotech",
+    "alt": "Tom Holland Iron Spider"
+  },
+  {
+    "id": "4",
+    "src": "/gallery-images/4.jpg",
+    "title": "Miles Morales",
+    "subtitle": "Earth-1610 // Brooklyn Prodigy",
+    "alt": "Miles Morales neon graffiti suit"
+  },
+  {
+    "id": "5",
+    "src": "/gallery-images/5.jpg",
+    "title": "Spider-Gwen",
+    "subtitle": "Earth-65 // Ghost-Spider",
+    "alt": "Spider-Gwen Ghost-Spider"
+  },
+  {
+    "id": "6",
+    "src": "/gallery-images/6.jpg",
+    "title": "Spider-Man 2099",
+    "subtitle": "Earth-928 // Miguel O'Hara",
+    "alt": "Spider-Man 2099 Miguel O'Hara"
+  },
+  {
+    "id": "7",
+    "src": "/gallery-images/7.jpg",
+    "title": "Spider-Punk",
+    "subtitle": "Earth-138 // Hobie Brown",
+    "alt": "Spider-Punk Hobie Brown"
+  },
+  {
+    "id": "8",
+    "src": "/gallery-images/8.jpg",
+    "title": "Spider-Man Noir",
+    "subtitle": "Earth-90214 // 1933 Great Depression",
+    "alt": "Spider-Man Noir trenchcoat suit"
+  },
+  {
+    "id": "9",
+    "src": "/gallery-images/9.jpg",
+    "title": "Pavitr Prabhakar",
+    "subtitle": "Earth-50101 // Mumbattan",
+    "alt": "Pavitr Prabhakar Spider-Man India"
+  },
+  {
+    "id": "10",
+    "src": "/gallery-images/10.jpg",
+    "title": "Symbiote Spider-Man",
+    "subtitle": "Earth-616 // Klyntar Alien Suit",
+    "alt": "Black Symbiote Suit Peter Parker"
+  }
+]

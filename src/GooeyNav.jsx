@@ -761,6 +761,7 @@ const GooeyNav = ({
           if (!item.href || item.href === '#' || item.href.startsWith('#') || item.href.startsWith('/')) {
             event.preventDefault();
           }
+          item.onClick?.(event);
           select(index);
         }
       };

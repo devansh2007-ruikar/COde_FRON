@@ -1,0 +1,139 @@
+/* Spider-Verse Hero Section & Chromatic Aberration Glitch Typography */
+
+.hero-glitch-container {
+  cursor: none;
+}
+
+.hero-glitch-container a,
+.hero-glitch-container button {
+  cursor: none;
+}
+
+.glitch-title {
+  position: relative;
+  display: inline-block;
+  color: #ffffff;
+  letter-spacing: -0.05em;
+  line-height: 0.9;
+  text-transform: uppercase;
+  font-weight: 900;
+  text-shadow: 0 0 20px rgba(226, 54, 54, 0.4);
+}
+
+.glitch-title::before,
+.glitch-title::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Cyan chromatic aberration channel */
+.glitch-title::before {
+  left: 3px;
+  text-shadow: -2.5px 0 #00f0ff;
+  clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+  animation: spider-glitch-1 3s infinite linear alternate-reverse;
+  opacity: 0.85;
+}
+
+/* Magenta / Red chromatic aberration channel */
+.glitch-title::after {
+  left: -3px;
+  text-shadow: 2.5px 0 #ff0055;
+  clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
+  animation: spider-glitch-2 2.4s infinite linear alternate-reverse;
+  opacity: 0.85;
+}
+
+@keyframes spider-glitch-1 {
+  0% {
+    clip-path: polygon(0 3%, 100% 3%, 100% 18%, 0 18%);
+    transform: translate(-2px, 0);
+  }
+  12% {
+    clip-path: polygon(0 32%, 100% 32%, 100% 42%, 0 42%);
+    transform: translate(3px, -1px);
+  }
+  24% {
+    clip-path: polygon(0 8%, 100% 8%, 100% 22%, 0 22%);
+    transform: translate(-1px, 2px);
+  }
+  38% {
+    clip-path: polygon(0 58%, 100% 58%, 100% 74%, 0 74%);
+    transform: translate(2px, -2px);
+  }
+  50% {
+    clip-path: polygon(0 20%, 100% 20%, 100% 34%, 0 34%);
+    transform: translate(-3px, 1px);
+  }
+  65% {
+    clip-path: polygon(0 76%, 100% 76%, 100% 92%, 0 92%);
+    transform: translate(2px, 1px);
+  }
+  80% {
+    clip-path: polygon(0 42%, 100% 42%, 100% 54%, 0 54%);
+    transform: translate(-2px, -1px);
+  }
+  100% {
+    clip-path: polygon(0 14%, 100% 14%, 100% 28%, 0 28%);
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes spider-glitch-2 {
+  0% {
+    clip-path: polygon(0 12%, 100% 12%, 100% 26%, 0 26%);
+    transform: translate(3px, 0);
+  }
+  14% {
+    clip-path: polygon(0 68%, 100% 68%, 100% 82%, 0 82%);
+    transform: translate(-3px, 2px);
+  }
+  28% {
+    clip-path: polygon(0 2%, 100% 2%, 100% 16%, 0 16%);
+    transform: translate(2px, -1px);
+  }
+  42% {
+    clip-path: polygon(0 52%, 100% 52%, 100% 64%, 0 64%);
+    transform: translate(-1px, 3px);
+  }
+  58% {
+    clip-path: polygon(0 82%, 100% 82%, 100% 94%, 0 94%);
+    transform: translate(2px, -2px);
+  }
+  72% {
+    clip-path: polygon(0 38%, 100% 38%, 100% 50%, 0 50%);
+    transform: translate(-2px, 1px);
+  }
+  88% {
+    clip-path: polygon(0 22%, 100% 22%, 100% 36%, 0 36%);
+    transform: translate(1px, -1px);
+  }
+  100% {
+    clip-path: polygon(0 0, 100% 0, 100% 12%, 0 12%);
+    transform: translate(0, 0);
+  }
+}
+
+/* Custom Rotating Cursor Animation */
+@keyframes cursor-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-cursor-spin {
+  animation: cursor-spin 9s linear infinite;
+  transform-origin: center;
+}
+
+.will-change-transform {
+  will-change: transform;
+}

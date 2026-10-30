@@ -1,15 +1,17 @@
 import React from 'react';
 import Layout from './Layout';
+import HeroSection from './components/HeroSection';
 import SpiderSection from './components/SpiderSection';
+import GallerySection from './components/GallerySection';
 
 export { Layout };
 
 export default function App() {
   return (
     <Layout>
-      <div className="-mt-32">
-        <SpiderSection />
-      </div>
+      <HeroSection />
+      <SpiderSection />
+      <GallerySection />
     </Layout>
   );
 }
