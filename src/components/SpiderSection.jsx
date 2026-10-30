@@ -181,7 +181,7 @@ function SpiderSection() {
   }, []);
 
   const handleCardSelect = useCallback((index) => {
-    setSelectedSpiderIndex(index);
+    // Delegates to OptionWheel: card strictly updates when wheel settles on target
     wheelRef.current?.selectIndex(index);
   }, []);
 

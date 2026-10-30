@@ -50,7 +50,7 @@ const OptionWheel = ({
   const lastRef = useRef(0);
   const cfgRef = useRef({});
   const onChangeRef = useRef(onChange);
-  const selectedRef = useRef(defaultSelected);
+  const settledRef = useRef(defaultSelected);
   const wheelTimerRef = useRef(null);
   const lastScrollReleaseRef = useRef(0);
   const scrollAccumulatorRef = useRef(0);
@@ -82,7 +82,25 @@ const OptionWheel = ({
     soundVolume
   };
 
+  const playTick = useCallback(() => {
+    const { soundUrl, soundVolume } = cfgRef.current;
+    if (!soundUrl) return;
+    const now = performance.now();
+    if (now - lastTickRef.current < 70) return;
+    lastTickRef.current = now;
+    if (!audioRef.current || audioUrlRef.current !== soundUrl) {
+      audioRef.current = new Audio(soundUrl);
+      audioRef.current.preload = 'auto';
+      audioUrlRef.current = soundUrl;
+    }
+    const audio = audioRef.current;
+    audio.volume = Math.min(Math.max(soundVolume, 0), 1);
+    audio.currentTime = 0;
+    audio.play()?.catch(() => {});
+  }, []);
+
   // Frame-rate independent exponential smoothing
+  // Strict Index-Sync: ONLY update selectedIndex & onChange when wheel COMPLETELY settles!
   const runFrame = useCallback(now => {
     const dt = Math.min((now - lastRef.current) / 1000, 0.05);
     lastRef.current = now;
@@ -94,7 +112,16 @@ const OptionWheel = ({
     const cur = posRef.current;
     let next = cur + (target - cur) * k;
     const settled = Math.abs(target - next) < 0.001;
-    if (settled) next = target;
+    if (settled) {
+      next = target;
+      const settledIdx = ((Math.round(target) % cfg.count) + cfg.count) % cfg.count;
+      if (settledIdx !== settledRef.current) {
+        settledRef.current = settledIdx;
+        setSelectedIndex(settledIdx);
+        onChangeRef.current?.(settledIdx, cfg.items[settledIdx]);
+        playTick();
+      }
+    }
     posRef.current = next;
 
     const els = itemRefs.current;
@@ -127,7 +154,7 @@ const OptionWheel = ({
     }
 
     rafRef.current = settled ? null : requestAnimationFrame(t => runFrameRef.current?.(t));
-  }, []);
+  }, [playTick]);
 
   runFrameRef.current = runFrame;
 
@@ -139,23 +166,6 @@ const OptionWheel = ({
     rafRef.current = requestAnimationFrame(t => runFrameRef.current?.(t));
   }, []);
 
-  const playTick = useCallback(() => {
-    const { soundUrl, soundVolume } = cfgRef.current;
-    if (!soundUrl) return;
-    const now = performance.now();
-    if (now - lastTickRef.current < 70) return;
-    lastTickRef.current = now;
-    if (!audioRef.current || audioUrlRef.current !== soundUrl) {
-      audioRef.current = new Audio(soundUrl);
-      audioRef.current.preload = 'auto';
-      audioUrlRef.current = soundUrl;
-    }
-    const audio = audioRef.current;
-    audio.volume = Math.min(Math.max(soundVolume, 0), 1);
-    audio.currentTime = 0;
-    audio.play()?.catch(() => {});
-  }, []);
-
   const applyTarget = useCallback(
     (value, snap) => {
       const cfg = cfgRef.current;
@@ -163,16 +173,11 @@ const OptionWheel = ({
       if (!cfg.loop) v = Math.min(Math.max(v, 0), Math.max(cfg.count - 1, 0));
       if (snap) v = Math.round(v);
       targetRef.current = v;
-      const idx = ((Math.round(v) % cfg.count) + cfg.count) % cfg.count;
-      if (idx !== selectedRef.current) {
-        selectedRef.current = idx;
-        setSelectedIndex(idx);
-        onChangeRef.current?.(idx, cfg.items[idx]);
-        playTick();
-      }
+      // Do NOT trigger intermediate state changes while spinning/scrolling.
+      // Strict Index-Sync updates selectedIndex and onChange only in runFrame when settled === true.
       startLoop();
     },
-    [startLoop, playTick]
+    [startLoop]
   );
 
   /**
@@ -191,7 +196,7 @@ const OptionWheel = ({
     if (Math.abs(delta) < 1) return;
 
     const maxIndex = cfg.count - 1;
-    const curIndex = selectedRef.current;
+    const curIndex = Math.round(targetRef.current);
     const now = performance.now();
 
     // SCROLL DOWN RELEASE: Only when already at LAST item (Tom Holland, index 3) and scrolling down
@@ -231,10 +236,10 @@ const OptionWheel = ({
     // Threshold Trigger: deliberate, heavy scroll (> 150 or < -150)
     if (scrollAccumulatorRef.current > 150) {
       scrollAccumulatorRef.current = 0;
-      applyTarget(targetRef.current + 1, true);
+      applyTarget(Math.round(targetRef.current) + 1, true);
     } else if (scrollAccumulatorRef.current < -150) {
       scrollAccumulatorRef.current = 0;
-      applyTarget(targetRef.current - 1, true);
+      applyTarget(Math.round(targetRef.current) - 1, true);
     }
   }, [applyTarget]);
 
@@ -310,7 +315,7 @@ const OptionWheel = ({
     selectIndex: (index) => {
       applyTarget(index, true);
     },
-    getSelectedIndex: () => selectedRef.current,
+    getSelectedIndex: () => settledRef.current,
     processWheel: (e) => processWheel(e)
   }), [applyTarget, processWheel]);
 

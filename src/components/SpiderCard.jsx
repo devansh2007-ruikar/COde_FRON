@@ -17,6 +17,7 @@ export const SPIDER_MEN = [
     themeColor: '#f43f5e',
     accentColor: '#06b6d4',
     suitName: 'Graffiti Spray-Paint & Stealth',
+    image: '/spider-images/4.jpg',
     tagline: 'Anyone can wear the mask. How you wear it is what matters.',
     bio: 'Brooklyn’s prodigy who broke multiversal canon. Wields explosive bio-electric Venom blasts, dynamic optical camouflage, and unrestrained leap-of-faith dimensional agility.',
     stats: [
@@ -48,6 +49,7 @@ export const SPIDER_MEN = [
     themeColor: '#e23636',
     accentColor: '#3b82f6',
     suitName: 'Symbiosis & Silver Webbing',
+    image: '/spider-images/1.jpg',
     tagline: 'With great power comes great responsibility.',
     bio: 'The original cinematic wall-crawler who balanced photojournalism, Midtown high school struggles, and selfless heroism while defending New York against the Green Goblin, Doc Ock, and Venom.',
     stats: [
@@ -80,6 +82,7 @@ export const SPIDER_MEN = [
     themeColor: '#ef4444',
     accentColor: '#1d4ed8',
     suitName: 'Biocable Nanofiber Weave',
+    image: '/spider-images/2.jpg',
     tagline: 'Secrets have a cost. They are not free.',
     bio: 'A lightning-fast, acrobatic genius whose masterclass in biochemistry yielded pressurized wrist web-shooters, unmatched aerial acrobatics, and an unrelenting passion for finding the truth.',
     stats: [
@@ -112,6 +115,7 @@ export const SPIDER_MEN = [
     themeColor: '#eab308',
     accentColor: '#dc2626',
     suitName: 'Stark Nanotech Iron Spider',
+    image: '/spider-images/3.jpg',
     tagline: 'If you’re nothing without the suit, then you shouldn’t have it.',
     bio: 'Battle-hardened across the cosmos with the Avengers, equipped with Stark nanotech armor, deployable mechanical waldo appendages, and neural network tactical HUD.',
     stats: [
@@ -192,13 +196,27 @@ function SpiderCard({ selectedIndex, activeIndex, onSelectSpider, className = ''
             </div>
           </div>
 
-          {/* Emblem & Holographic Backdrop */}
-          <div className="relative w-full h-28 sm:h-32 rounded-xl overflow-hidden mb-3 border border-white/15 bg-gradient-to-br from-neutral-900/90 via-black/90 to-neutral-950/90 flex items-center justify-center group">
+          {/* Card Preview Box: Dynamically Loads Local Image */}
+          <div className="relative w-full h-28 sm:h-32 rounded-xl overflow-hidden mb-3 border border-white/20 bg-gradient-to-br from-neutral-900/95 via-black to-neutral-950 flex items-center justify-center group shadow-inner">
+            {/* Ambient theme glow */}
             <div
-              className="absolute inset-0 opacity-25 blur-xl transition-all duration-700"
+              className="absolute inset-0 opacity-25 blur-xl transition-all duration-700 pointer-events-none"
               style={{ backgroundColor: current.themeColor }}
             />
 
+            {/* Dynamic Local Spider-Man Image */}
+            <img
+              src={current.image || `/spider-images/${index + 1}.jpg`}
+              alt={current.name}
+              className="absolute inset-0 w-full h-full object-cover object-top filter brightness-[0.88] contrast-105 group-hover:scale-105 transition-transform duration-700 ease-out"
+              loading="eager"
+            />
+
+            {/* Cinematic Gradient Overlays for Readability & Holographic Tone */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/30 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/40 pointer-events-none" />
+
+            {/* Subtle Tech Hologram Grid */}
             <div
               className="absolute inset-0 opacity-15 pointer-events-none"
               style={{
@@ -206,18 +224,39 @@ function SpiderCard({ selectedIndex, activeIndex, onSelectSpider, className = ''
                   linear-gradient(to right, rgba(255,255,255,0.2) 1px, transparent 1px),
                   linear-gradient(to bottom, rgba(255,255,255,0.2) 1px, transparent 1px)
                 `,
-                backgroundSize: '20px 20px'
+                backgroundSize: '16px 16px'
               }}
             />
 
-            <div className="relative z-10 flex flex-col items-center justify-center transition-transform duration-300 group-hover:scale-105">
-              {current.svgEmblem}
-              <span className="text-[9px] font-mono tracking-widest uppercase text-neutral-400 mt-1">
-                {current.badge}
-              </span>
+            {/* HUD Reticle & Details Overlay */}
+            <div className="relative z-10 w-full h-full p-2.5 flex flex-col justify-between pointer-events-none">
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] font-mono tracking-widest uppercase text-white font-bold px-2 py-0.5 rounded bg-black/60 border border-white/20 backdrop-blur-sm">
+                  {current.badge}
+                </span>
+                <span className="text-[9px] font-mono tracking-wider text-neutral-300 bg-black/60 px-1.5 py-0.5 rounded border border-white/10 backdrop-blur-sm">
+                  CAM_0{index + 1}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 bg-black/60 px-2 py-0.5 rounded border border-white/10 backdrop-blur-sm">
+                  <div className="w-3.5 h-3.5 flex items-center justify-center text-white">
+                    {current.svgEmblem}
+                  </div>
+                  <span className="text-[10px] font-mono tracking-wider text-neutral-200 font-semibold truncate max-w-[190px]">
+                    {current.suitName}
+                  </span>
+                </div>
+                <span
+                  className="w-2 h-2 rounded-full animate-ping"
+                  style={{ backgroundColor: current.themeColor }}
+                />
+              </div>
             </div>
 
-            <div className="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse top-2" />
+            {/* Top scanning pulse line */}
+            <div className="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-pulse top-0 pointer-events-none" />
           </div>
 
           {/* Bio */}
