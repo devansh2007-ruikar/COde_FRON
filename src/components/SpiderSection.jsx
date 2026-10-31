@@ -17,9 +17,9 @@ import { smoothScrollToSection } from '../utils/smoothScroll';
 // Preload all 8 spider textures to ensure zero pop-in
 useTexture.preload(SPIDER_PEOPLE.map((p) => p.image));
 
-const CARD_WIDTH = 2.2;
-const CARD_HEIGHT = 3.25;
-const RADIUS = 3.85;
+const CARD_WIDTH = 2.0;
+const CARD_HEIGHT = 2.9;
+const RADIUS = 3.8;
 const TOTAL_ITEMS = SPIDER_PEOPLE.length;
 const ANGLE_STEP = (2 * Math.PI) / TOTAL_ITEMS;
 const TOTAL_ROTATION_SPAN = (TOTAL_ITEMS - 1) * ANGLE_STEP;
@@ -186,7 +186,7 @@ function CarouselGroup({ scrollYProgress, activeIndex, setActiveIndex, onCardCli
   });
 
   return (
-    <group ref={groupRef} position={[0, 0, 0]}>
+    <group ref={groupRef} position={[0, -0.65, 0]}>
       {SPIDER_PEOPLE.map((spider, idx) => {
         const angle = idx * ANGLE_STEP;
         return (
@@ -310,7 +310,12 @@ function SpiderSection() {
             - Absolutely positioned inside the sticky container behind the UI
             - Hosts PerspectiveCamera, lights, and CarouselGroup
             ========================================================================= */}
-        <div className="absolute inset-0 z-10 w-full h-full pointer-events-auto">
+        {/* =========================================================================
+            3D WEBGL LAYER (z-10)
+            - Placed in its own wrapper behind the UI: absolute inset-0 z-10
+            - Guarantees 3D rotating planes will NEVER overlap or hide title text
+            ========================================================================= */}
+        <div className="absolute inset-0 z-10">
           <Canvas
             gl={{
               antialias: true,
@@ -319,7 +324,7 @@ function SpiderSection() {
             }}
             className="w-full h-full"
           >
-            <PerspectiveCamera makeDefault position={[0, 0.1, 8.8]} fov={45} />
+            <PerspectiveCamera makeDefault position={[0, 0, 9.4]} fov={45} />
             <ambientLight intensity={1.6} />
             <directionalLight position={[0, 8, 6]} intensity={1.8} />
             <pointLight
@@ -341,14 +346,14 @@ function SpiderSection() {
         </div>
 
         {/* =========================================================================
-            UI OVERLAY (STRICT HTML LAYER - z-[50])
-            - Top: "ENTER THE SPIDER-VERSE" title & dimensional status
-            - Bottom: Dynamic "ENTER [NAME]'S WORLD" button & pagination dots
-            - Stays crystal clear, perfectly formatted, and never overlaps the 3D meshes
+            UI OVERLAY (STRICT HTML LAYER - z-50)
+            - Strict absolute wrapper: absolute inset-0 z-50 pointer-events-none flex flex-col justify-between items-center py-24
+            - pointer-events-auto strictly on the bottom button so it remains clickable
+            - Transparent UI overlay lets scroll/drag events pass through to 3D canvas
             ========================================================================= */}
-        <div className="relative z-[50] w-full h-full flex flex-col justify-between items-center pointer-events-none px-4 pt-16 sm:pt-20 pb-6 sm:pb-8">
+        <div className="absolute inset-0 z-50 pointer-events-none flex flex-col justify-between items-center py-24 px-4">
           {/* Top Section: Title & Multiverse Status */}
-          <div className="pointer-events-auto flex flex-col items-center text-center max-w-2xl mx-auto">
+          <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
             {/* Multiverse Frequency Pill */}
             <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 mb-2">
               <span
@@ -388,13 +393,13 @@ function SpiderSection() {
           </div>
 
           {/* Bottom Section: Dynamic Button & Pagination Dots */}
-          <div className="pointer-events-auto flex flex-col items-center gap-3 w-full max-w-md mx-auto">
+          <div className="flex flex-col items-center gap-3 w-full max-w-md mx-auto">
             {/* Character Tagline */}
             <p className="text-[11px] sm:text-xs font-serif italic text-neutral-400 text-center px-4 max-w-sm line-clamp-1">
               &ldquo;{currentSpider.tagline}&rdquo;
             </p>
 
-            {/* Dynamic "ENTER [NAME]'S WORLD" Button */}
+            {/* Dynamic "ENTER [NAME]'S WORLD" Button - pointer-events-auto */}
             <motion.button
               type="button"
               key={currentSpider.id}
@@ -406,7 +411,7 @@ function SpiderSection() {
                 // Smooth transition into Page 3 (Multiverse Gallery)
                 smoothScrollToSection(2);
               }}
-              className="w-full sm:w-auto min-w-[240px] px-6 py-3 rounded-xl font-mono text-xs sm:text-sm font-black uppercase tracking-wider text-white bg-black/80 backdrop-blur-xl border border-white/20 hover:border-white/50 shadow-2xl flex items-center justify-center gap-3 transition-all duration-300 cursor-pointer group"
+              className="pointer-events-auto w-full sm:w-auto min-w-[240px] px-6 py-3 rounded-xl font-mono text-xs sm:text-sm font-black uppercase tracking-wider text-white bg-black/80 backdrop-blur-xl border border-white/20 hover:border-white/50 shadow-2xl flex items-center justify-center gap-3 transition-all duration-300 cursor-pointer group"
               style={{
                 boxShadow: `0 0 25px ${currentSpider.themeColor}33`,
                 borderColor: `${currentSpider.themeColor}88`
@@ -432,8 +437,8 @@ function SpiderSection() {
               </svg>
             </motion.button>
 
-            {/* Pagination Indicators for all 8 suits */}
-            <div className="flex items-center gap-1.5 sm:gap-2 pt-1">
+            {/* Pagination Indicators for all 8 suits - pointer-events-auto */}
+            <div className="pointer-events-auto flex items-center gap-1.5 sm:gap-2 pt-1">
               {SPIDER_PEOPLE.map((spider, idx) => {
                 const isSelected = idx === activeIndex;
                 return (
