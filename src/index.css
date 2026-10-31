@@ -1,8 +1,13 @@
 @import "tailwindcss";
 
+* {
+  cursor: none !important;
+}
+
 @layer base {
   * {
     box-sizing: border-box;
+    cursor: none !important;
   }
   html, body, #root {
     margin: 0;
@@ -63,5 +68,20 @@
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* Global Custom Rotating Cursor Animation */
+@keyframes cursor-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-cursor-spin {
+  animation: cursor-spin 9s linear infinite;
+  transform-origin: center;
 }
 

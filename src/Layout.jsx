@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import Navbar from './Navbar';
+import CustomCursor from './components/CustomCursor';
 import { smoothScrollToSection, getCurrentSectionIndex, isScrollAnimating } from './utils/smoothScroll';
 
 /**
@@ -30,6 +31,9 @@ export default function Layout({ children, activeIndex = 0, onNavChange }) {
 
   return (
     <div className="h-screen h-[100dvh] w-full max-w-full bg-black text-white relative overflow-hidden select-none">
+      {/* Global Custom Hardware-Accelerated Cursor (z-[9999]) */}
+      <CustomCursor />
+
       {/* Subtle graph-paper grid background fixed across the entire application */}
       <div 
         className="fixed inset-0 z-0 opacity-20 pointer-events-none"

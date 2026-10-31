@@ -12,37 +12,10 @@ import './HeroSection.css';
  */
 function HeroSection({ onExploreClick }) {
   const heroWrapperRef = useRef(null);
-  const cursorRef = useRef(null);
   const halftoneContainerRef = useRef(null);
-  const rafCursorRef = useRef(null);
-  const latestCursorRef = useRef({ x: -200, y: -200, visible: false });
 
   // Spider-Man high-resolution silhouette
   const src = 'https://images.unsplash.com/photo-1635805737707-575885ab0820?q=80&w=1600&auto=format&fit=crop';
-
-  const scheduleCursorUpdate = useCallback((x, y, visible) => {
-    latestCursorRef.current = { x, y, visible };
-
-    if (!rafCursorRef.current) {
-      rafCursorRef.current = requestAnimationFrame(() => {
-        rafCursorRef.current = null;
-        const cursorEl = cursorRef.current;
-        if (!cursorEl) return;
-
-        const { x: curX, y: curY, visible: isVis } = latestCursorRef.current;
-        cursorEl.style.transform = `translate3d(${curX}px, ${curY}px, 0) translate(-50%, -50%)`;
-        cursorEl.style.opacity = isVis ? '1' : '0';
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (rafCursorRef.current) {
-        cancelAnimationFrame(rafCursorRef.current);
-      }
-    };
-  }, []);
 
   // Smooth cinematic wheel navigation to Section 1
   useEffect(() => {
@@ -81,14 +54,6 @@ function HeroSection({ onExploreClick }) {
   }, []);
 
   const handlePointer = useCallback((e) => {
-    if (!heroWrapperRef.current) return;
-    const rect = heroWrapperRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const visible = e.type !== 'pointerleave' && e.type !== 'pointercancel';
-
-    scheduleCursorUpdate(x, y, visible);
-
     if (halftoneContainerRef.current) {
       const synthEvent = new PointerEvent(e.type, {
         clientX: e.clientX,
@@ -99,7 +64,7 @@ function HeroSection({ onExploreClick }) {
       });
       halftoneContainerRef.current.dispatchEvent(synthEvent);
     }
-  }, [scheduleCursorUpdate]);
+  }, []);
 
   const handleExplore = useCallback(() => {
     if (onExploreClick) {
@@ -204,50 +169,6 @@ function HeroSection({ onExploreClick }) {
             Scroll Down To Universe Wheel ↓
           </span>
         </button>
-      </div>
-
-      {/* Custom Circular Cursor Overlay - strictly hidden on touch screens via CSS and hidden sm:block */}
-      <div
-        ref={cursorRef}
-        className="hero-cursor-overlay pointer-events-none absolute z-50 transition-opacity duration-150 will-change-transform hidden sm:block"
-        style={{
-          left: 0,
-          top: 0,
-          transform: 'translate3d(-200px, -200px, 0) translate(-50%, -50%)',
-          opacity: 0
-        }}
-      >
-        <svg
-          viewBox="0 0 100 100"
-          className="w-24 h-24 drop-shadow-[0_0_12px_rgba(226,54,54,0.6)]"
-        >
-          <circle
-            cx="50"
-            cy="50"
-            r="16"
-            stroke="#e23636"
-            strokeWidth="2"
-            fill="rgba(0, 0, 0, 0.4)"
-          />
-          <circle
-            cx="50"
-            cy="50"
-            r="3"
-            fill="#00f0ff"
-          />
-          <g className="animate-cursor-spin">
-            <path
-              id="heroCursorPath"
-              d="M 50, 50 m -34, 0 a 34,34 0 1,1 68,0 a 34,34 0 1,1 -68,0"
-              fill="none"
-            />
-            <text className="fill-neutral-200 font-mono text-[8.5px] uppercase tracking-[0.14em] font-bold">
-              <textPath href="#heroCursorPath" startOffset="0%">
-                move the cursor • move the cursor • 
-              </textPath>
-            </text>
-          </g>
-        </svg>
       </div>
     </section>
   );
