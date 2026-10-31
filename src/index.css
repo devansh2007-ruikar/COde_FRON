@@ -55,3 +55,13 @@
   animation: spiderCardFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
   will-change: opacity, transform, filter;
 }
+
+/* Scrollbar Hide Utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+

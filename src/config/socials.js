@@ -1,5 +1,5 @@
 export const socialLinks = {
-  instagram: "https://instagram.com/your_username",
+  instagram: "https://instagram.com/d3vansh27",
   github: "https://github.com/devansh2007-ruikar",
-  linkedin: "https://linkedin.com/in/your_username"
+  linkedin: "https://www.linkedin.com/in/devansh-ruikar-4097a2382/"
 };

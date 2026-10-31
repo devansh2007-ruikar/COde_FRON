@@ -11,6 +11,9 @@ export { Layout };
 const SECTION_MAP = {
   'hero-dimension': 0,
   'spider-selection': 1,
+  'spider-tobey': 1,
+  'spider-andrew': 1,
+  'spider-tom': 1,
   'multiverse-gallery': 2
 };
 
@@ -33,14 +36,21 @@ export default function App() {
       });
     };
 
-    // Threshold 0.5 triggers when a 100vh section occupies >= 50% of the viewport
+    // Threshold 0.4 triggers when a 100vh section enters view
     const observer = new IntersectionObserver(handleIntersect, {
       root: container || null,
-      threshold: 0.5
+      threshold: 0.4
     });
     observerRef.current = observer;
 
-    const sectionIds = ['hero-dimension', 'spider-selection', 'multiverse-gallery'];
+    const sectionIds = [
+      'hero-dimension',
+      'spider-selection',
+      'spider-tobey',
+      'spider-andrew',
+      'spider-tom',
+      'multiverse-gallery'
+    ];
     sectionIds.forEach((id) => {
       const el = document.getElementById(id);
       if (el) observer.observe(el);
@@ -51,8 +61,16 @@ export default function App() {
       if (!container) return;
       const height = container.clientHeight || window.innerHeight;
       if (!height) return;
-      const index = Math.max(0, Math.min(2, Math.round(container.scrollTop / height)));
-      setActiveIndex((prev) => (prev !== index ? index : prev));
+      const galleryEl = document.getElementById('multiverse-gallery');
+      const galleryTop = galleryEl ? (galleryEl.closest('.pin-spacer')?.offsetTop ?? galleryEl.offsetTop) : height * 5;
+
+      if (container.scrollTop < height * 0.4) {
+        setActiveIndex(0);
+      } else if (container.scrollTop >= galleryTop - height * 0.5) {
+        setActiveIndex(2);
+      } else {
+        setActiveIndex(1);
+      }
     };
 
     if (container) {

@@ -22,8 +22,13 @@ export function getCurrentSectionIndex() {
   if (typeof document === 'undefined') return 0;
   const container = document.getElementById('snap-container');
   if (!container || !container.clientHeight) return 0;
-  const rawIndex = container.scrollTop / container.clientHeight;
-  return Math.max(0, Math.min(SECTION_IDS.length - 1, Math.round(rawIndex)));
+  const height = container.clientHeight;
+  const galleryEl = document.getElementById('multiverse-gallery');
+  const galleryTop = galleryEl ? (galleryEl.closest('.pin-spacer')?.offsetTop ?? galleryEl.offsetTop) : height * 5;
+
+  if (container.scrollTop < height * 0.4) return 0;
+  if (container.scrollTop >= galleryTop - height * 0.5) return 2;
+  return 1;
 }
 
 /**
@@ -38,7 +43,7 @@ export function smoothScrollToSection(targetIndex, duration = 1.25) {
   const validIndex = Math.max(0, Math.min(SECTION_IDS.length - 1, targetIndex));
   const targetEl = document.getElementById(SECTION_IDS[validIndex]);
   const pageHeight = container.clientHeight || window.innerHeight;
-  const targetTop = targetEl ? targetEl.offsetTop : validIndex * pageHeight;
+  const targetTop = targetEl ? (targetEl.closest('.pin-spacer')?.offsetTop ?? targetEl.offsetTop) : validIndex * pageHeight;
 
   // If already at the target section, skip animation
   if (Math.abs(container.scrollTop - targetTop) < 3) {

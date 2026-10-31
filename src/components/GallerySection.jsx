@@ -1,91 +1,64 @@
-import React, { useState, memo, useRef, useEffect, useCallback } from 'react';
+import React, { memo, useRef, useEffect, useCallback } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import FlexCarousel from './FlexCarousel';
 import { SPIDER_GALLERY_ITEMS } from '../data/galleryData';
-import { smoothScrollToSection, isScrollAnimating } from '../utils/smoothScroll';
+import { smoothScrollToSection } from '../utils/smoothScroll';
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 /**
- * Page 3: Character Gallery (FlexCarousel)
- * Full-screen Section:
- * - Proper top padding (pt-16 sm:pt-20) safely below fixed header so title is never cut off.
- * - The FlexCarousel takes up the remaining height of the page (flex-1 min-h-0) without overflowing.
- * - Local images (10 characters) with autoplay={true} enabled.
- * - Relaxed cinematic smooth scrolling.
+ * Page 3: Multiverse Character Gallery
+ * - Wrapper-level GSAP matchMedia only:
+ *   1. Desktop ((min-width: 768px)):
+ *      - ScrollTrigger targets the Page 3 wrapper (<section>) with pin: true and scrub: 1
+ *   2. Mobile ((max-width: 767px)):
+ *      - GSAP ScrollTrigger killed on mobile; page scrolls vertically as normal
+ * - FlexCarousel component is 100% untouched and pristine:
+ *   - No internal classes or structures modified
+ *   - Natively handles its own WebGL 3D touch swiping and desktop interaction
+ * - Followed immediately by Footer7
  */
 function GallerySection({ items = SPIDER_GALLERY_ITEMS }) {
   const sectionRef = useRef(null);
   const carouselRef = useRef(null);
-  const [screenType, setScreenType] = useState('desktop');
 
-  useEffect(() => {
-    const handleResize = () => {
-      const w = window.innerWidth;
-      if (w < 640) setScreenType('mobile');
-      else if (w < 1024) setScreenType('tablet');
-      else setScreenType('desktop');
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const cardHeight = screenType === 'mobile' ? 0.44 : screenType === 'tablet' ? 0.54 : 0.65;
-
-  // Trigger bloom intro when this 100dvh page comes into view
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          carouselRef.current?.startIntro();
-        }
-      },
-      { threshold: 0.3 }
-    );
+    const mm = gsap.matchMedia();
 
-    observer.observe(section);
-    return () => observer.disconnect();
-  }, []);
+    // 1. Desktop ((min-width: 768px)):
+    // Apply GSAP ScrollTrigger with pin: true and scrub: 1 strictly to the Page 3 wrapper
+    mm.add('(min-width: 768px)', () => {
+      const st = ScrollTrigger.create({
+        trigger: section,
+        scroller: '#snap-container',
+        pin: true,
+        scrub: 1,
+        start: 'top top',
+        end: '+=100%',
+        invalidateOnRefresh: true,
+        anticipatePin: 1
+      });
 
-  // Smooth cinematic wheel navigation to Section 1 (when scrolling up outside carousel)
-  useEffect(() => {
-    const el = sectionRef.current;
-    if (!el) return;
+      return () => {
+        st.kill();
+      };
+    });
 
-    let accumulator = 0;
-    let timer = null;
+    // 2. Mobile ((max-width: 767px)):
+    // Simply kill the GSAP ScrollTrigger on the Page 3 wrapper so the page scrolls vertically as normal.
+    // FlexCarousel natively handles its own mobile touch interactions.
+    mm.add('(max-width: 767px)', () => {
+      // No ScrollTrigger or pin applied
+    });
 
-    const onWheel = (e) => {
-      if (isScrollAnimating()) {
-        if (e.cancelable) e.preventDefault();
-        return;
-      }
-
-      // If scrolling UP outside the 3D flex carousel canvas
-      if (e.deltaY < 0) {
-        const inCarousel = e.target.closest('.flex-carousel');
-        if (inCarousel) return; // Allow carousel internal interaction
-
-        if (e.cancelable) e.preventDefault();
-        accumulator += e.deltaY;
-
-        if (timer) clearTimeout(timer);
-        timer = setTimeout(() => {
-          accumulator = 0;
-        }, 350);
-
-        if (accumulator < -60) {
-          accumulator = 0;
-          smoothScrollToSection(1);
-        }
-      }
-    };
-
-    el.addEventListener('wheel', onWheel, { passive: false });
     return () => {
-      el.removeEventListener('wheel', onWheel);
-      if (timer) clearTimeout(timer);
+      mm.revert();
     };
   }, []);
 
@@ -101,9 +74,9 @@ function GallerySection({ items = SPIDER_GALLERY_ITEMS }) {
     <section
       ref={sectionRef}
       id="multiverse-gallery"
-      className="h-screen h-[100dvh] w-full max-w-full relative overflow-hidden flex flex-col justify-between bg-black text-white px-3 sm:px-8 pt-14 sm:pt-20 pb-2 sm:pb-4 select-none"
+      className="h-screen h-[100dvh] w-full max-w-full relative overflow-hidden bg-black text-white flex flex-col justify-between px-3 sm:px-8 pt-14 sm:pt-20 pb-4 select-none"
     >
-      {/* Top Header & Multiverse Info (Safe below fixed navbar, never clipped) */}
+      {/* Top Header & Multiverse Info */}
       <div className="relative z-10 max-w-7xl mx-auto w-full pt-1 pb-1.5 sm:pb-2 flex-shrink-0 border-b border-white/10 flex flex-col sm:flex-row sm:items-end justify-between gap-1.5 sm:gap-2">
         <div>
           <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
@@ -128,7 +101,7 @@ function GallerySection({ items = SPIDER_GALLERY_ITEMS }) {
             </span>
             <span>&bull;</span>
             <span>
-              AUTOPLAY: <strong className="text-emerald-400">ON</strong>
+              AUTOPLAY: <strong className="text-emerald-400">ACTIVE</strong>
             </span>
           </div>
 
@@ -158,21 +131,20 @@ function GallerySection({ items = SPIDER_GALLERY_ITEMS }) {
       </div>
 
       {/* 
-        FlexCarousel Canvas Wrapper:
-        - Takes up remaining height of 100dvh page via flex-1 min-h-0
-        - Scaled cardHeight dynamically on mobile (0.44) so active cards, titles, and indices never clip
-        - autoplay={true} with local images
+        Pristine FlexCarousel Canvas Wrapper:
+        - Houses the original, unmodified FlexCarousel component
+        - FlexCarousel handles its own layout, WebGL rendering, touch gestures, and desktop interaction
       */}
-      <div className="relative z-10 max-w-7xl mx-auto w-full flex-1 min-h-0 my-2 sm:my-3 overflow-hidden rounded-xl sm:rounded-2xl bg-black border border-white/10 shadow-2xl shadow-black">
+      <div className="relative z-10 max-w-7xl mx-auto w-full flex-1 min-h-[460px] sm:min-h-[520px] my-2 sm:my-3 overflow-hidden rounded-xl sm:rounded-2xl bg-black border border-white/10 shadow-2xl shadow-black">
         <FlexCarousel
           items={items}
           ref={carouselRef}
           preset="vortex"
           intro="bloom"
-          cardHeight={cardHeight}
+          cardHeight={0.62}
           focusOnClick={true}
           captions={true}
-          captureWheel={true}
+          captureWheel={false}
           startOnScroll={true}
           autoplay={true}
           interval={3.5}
@@ -181,30 +153,30 @@ function GallerySection({ items = SPIDER_GALLERY_ITEMS }) {
       </div>
 
       {/* Bottom Status & Info Bar */}
-      <div className="relative z-10 max-w-7xl mx-auto w-full pt-2 pb-1 flex-shrink-0 flex flex-col sm:flex-row items-center justify-between gap-2 text-neutral-400 font-mono text-[11px] border-t border-white/10">
+      <div className="relative z-10 max-w-7xl mx-auto w-full pt-2 pb-1 flex-shrink-0 flex flex-col sm:flex-row items-center justify-between gap-2 text-neutral-400 font-mono text-[10px] sm:text-[11px] border-t border-white/10">
         <div className="flex flex-wrap items-center gap-2">
           <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold">
             AUTOPLAY ON
           </span>
           <span>&bull;</span>
-          <span>Hover to pause</span>
+          <span>Drag or swipe to explore</span>
           <span>&bull;</span>
-          <span>Click card to zoom</span>
+          <span className="text-neutral-500">Scroll down for dispatch &darr;</span>
         </div>
 
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => smoothScrollToSection(1)}
-            className="text-neutral-400 hover:text-white transition-colors cursor-pointer uppercase"
+            className="hover:text-red-400 transition-colors uppercase font-bold cursor-pointer"
           >
-            ↑ Multiverse Selection
+            ↑ Variants
           </button>
           <span>&bull;</span>
           <button
             type="button"
             onClick={() => smoothScrollToSection(0)}
-            className="text-neutral-400 hover:text-white transition-colors cursor-pointer uppercase"
+            className="hover:text-white transition-colors uppercase cursor-pointer"
           >
             ↑ Top
           </button>
