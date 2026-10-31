@@ -20,7 +20,13 @@ export const SPIDER_PEOPLE = [
     themeColor: '#e23636',
     image: '/gallery-images/1.jpg',
     buttonText: "ENTER TOBEY'S WORLD",
-    tagline: 'With great power comes great responsibility.'
+    tagline: 'With great power comes great responsibility.',
+    bio: 'Bitten by a genetically modified spider during a high school field trip, Peter Parker learned the hardest lesson of his life through the tragic loss of Uncle Ben. Anchoring the original cinematic multiverse, he wields organic webbing, unmatched resolve, and the timeless ethos that defines what it means to be a hero.',
+    stats: {
+      strength: 94,
+      agility: 88,
+      tech: 68
+    }
   },
   {
     id: 'andrew',
@@ -32,7 +38,13 @@ export const SPIDER_PEOPLE = [
     themeColor: '#3b82f6',
     image: '/gallery-images/2.jpg',
     buttonText: "ENTER ANDREW'S WORLD",
-    tagline: 'Secrets have a cost. They are not free.'
+    tagline: 'Secrets have a cost. They are not free.',
+    bio: 'A brilliant scientific prodigy haunted by the mystery of his parents and the grief of losing Gwen Stacy. Operating out of Earth-120703, this Spider-Man relies on hyper-kinetic acrobatic combat, self-engineered Oscorp web-shooters, and an unyielding commitment to protect the innocent.',
+    stats: {
+      strength: 87,
+      agility: 96,
+      tech: 89
+    }
   },
   {
     id: 'tom',
@@ -44,7 +56,13 @@ export const SPIDER_PEOPLE = [
     themeColor: '#eab308',
     image: '/gallery-images/3.jpg',
     buttonText: "ENTER TOM'S WORLD",
-    tagline: "If you're nothing without the suit, then you shouldn't have it."
+    tagline: "If you're nothing without the suit, then you shouldn't have it.",
+    bio: 'Integrated into the Marvel Cinematic Universe, Peter Parker grew under the mentorship of Tony Stark before sacrificing his personal identity to restore the dimensional balance. Equipped with Stark Industries nanotech, integrated AI, and hyper-reactive spider-sense.',
+    stats: {
+      strength: 89,
+      agility: 92,
+      tech: 97
+    }
   },
   {
     id: 'miles',
@@ -56,7 +74,13 @@ export const SPIDER_PEOPLE = [
     themeColor: '#f43f5e',
     image: '/gallery-images/4.jpg',
     buttonText: "ENTER MILES' WORLD",
-    tagline: 'Anyone can wear the mask. How you wear it is what matters.'
+    tagline: 'Anyone can wear the mask. How you wear it is what matters.',
+    bio: 'A Brooklyn teen bitten by a dimension-displaced radioactive spider, Miles broke the predetermined canon of the multiverse. Defying destiny to save his family and the dimensional weave, Miles commands rare bio-electric Venom Blasts and optical camouflage alongside standard spider abilities.',
+    stats: {
+      strength: 90,
+      agility: 95,
+      tech: 84
+    }
   },
   {
     id: 'gwen',
@@ -68,7 +92,13 @@ export const SPIDER_PEOPLE = [
     themeColor: '#ec4899',
     image: '/gallery-images/5.jpg',
     buttonText: "ENTER GWEN'S WORLD",
-    tagline: "In my universe, I couldn't save my best friend. But I can save you."
+    tagline: "In my universe, I couldn't save my best friend. But I can save you.",
+    bio: 'Hailing from Earth-65, Gwen Stacy took up the mantle of Ghost-Spider after failing to save her best friend, Peter Parker. Balancing her life as a dimensional rock drummer and vigilante, she moves with balletic grace, sonic intuition, and fluid dimensional awareness.',
+    stats: {
+      strength: 85,
+      agility: 98,
+      tech: 86
+    }
   },
   {
     id: 'miguel',
@@ -80,7 +110,13 @@ export const SPIDER_PEOPLE = [
     themeColor: '#06b6d4',
     image: '/gallery-images/6.jpg',
     buttonText: "ENTER MIGUEL'S WORLD",
-    tagline: 'Canon events hold the multiverse together. We cannot break them.'
+    tagline: 'Canon events hold the multiverse together. We cannot break them.',
+    bio: 'Geneticist from Nueva York in the year 2099, Miguel rewritten his genetic code to survive corporate betrayal, acquiring organic talons, accelerated vision, and paralytic venom fangs. As founder of the Spider-Society, he shoulders the cosmic burden of defending canon timelines.',
+    stats: {
+      strength: 97,
+      agility: 91,
+      tech: 95
+    }
   },
   {
     id: 'pavitr',
@@ -92,7 +128,13 @@ export const SPIDER_PEOPLE = [
     themeColor: '#10b981',
     image: '/gallery-images/9.jpg',
     buttonText: "ENTER PAVITR'S WORLD",
-    tagline: 'Being Spider-Man is so easy! Just keep your hair looking fresh.'
+    tagline: 'Being Spider-Man is so easy! Just keep your hair looking fresh.',
+    bio: 'Living in the vibrant vertical metropolis of Mumbattan on Earth-50101, Pavitr received spider abilities through mystical ancient forces rather than science. Charismatic, quick-witted, and stylish, he swings between skyscrapers with effortless flair and a cup of authentic chai.',
+    stats: {
+      strength: 86,
+      agility: 98,
+      tech: 74
+    }
   },
   {
     id: 'hobie',
@@ -104,7 +146,13 @@ export const SPIDER_PEOPLE = [
     themeColor: '#a855f7',
     image: '/gallery-images/7.jpg',
     buttonText: "ENTER HOBIE'S WORLD",
-    tagline: "I don't believe in consistency. But I believe in taking down fascists."
+    tagline: "I don't believe in consistency. But I believe in taking down fascists.",
+    bio: 'The anarchic punk-rock icon of Earth-138, Hobie Brown fights totalitarian control with a customized electric guitar, spiky attitude, and refusal to conform to any canon. His visual frequency shifts between collage art and xeroxed gig posters, disrupting the dimensional fabric wherever he steps.',
+    stats: {
+      strength: 88,
+      agility: 94,
+      tech: 91
+    }
   }
 ];
 
