@@ -3,6 +3,8 @@ import Layout from './Layout';
 import HeroSection from './components/HeroSection';
 import SpiderSection from './components/SpiderSection';
 import GallerySection from './components/GallerySection';
+import Footer7 from './components/Footer7';
+
 
 export { Layout };
 
@@ -70,6 +72,7 @@ export default function App() {
       <HeroSection />
       <SpiderSection />
       <GallerySection />
+      <Footer7 />
     </Layout>
   );
 }
